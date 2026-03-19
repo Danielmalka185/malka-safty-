@@ -67,7 +67,7 @@ const PdfPreview = ({ template, data }: { template: CertificateTemplate; data: R
     if (!template.pdfBase64) return;
     
     generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData).then(bytes => {
-      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
       return () => URL.revokeObjectURL(url);
