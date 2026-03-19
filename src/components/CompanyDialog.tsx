@@ -19,6 +19,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
     registrationNumber: '',
     contactPerson: '',
     phone: '',
+    officePhone: '',
     email: '',
     address: '',
     mailingAddress: '',
