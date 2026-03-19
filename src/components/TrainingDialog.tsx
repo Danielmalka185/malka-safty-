@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { companies, employees, trainingCategories, trainingTypes, type Training } from "@/data/mockData";
+import { companies, employees, trainingCategories, trainingTypes, calculateFinalPrice, type Training } from "@/data/mockData";
 
 interface TrainingDialogProps {
   open: boolean;
@@ -24,6 +24,9 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
   const [instructor, setInstructor] = useState('');
+  const [pricingType, setPricingType] = useState<'per_person' | 'global'>('per_person');
+  const [basePrice, setBasePrice] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
 
   useEffect(() => {
     if (training) {
@@ -34,6 +37,9 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       setDate(training.date);
       setLocation(training.location);
       setInstructor(training.instructor);
+      setPricingType(training.pricingType);
+      setBasePrice(training.basePrice);
+      setDiscountPercent(training.discountPercent);
     } else {
       setCompanyId('');
       setCategoryId('');
@@ -42,6 +48,9 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       setDate('');
       setLocation('');
       setInstructor('');
+      setPricingType('per_person');
+      setBasePrice(0);
+      setDiscountPercent(0);
     }
   }, [training, open]);
 
@@ -54,6 +63,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
     () => employees.filter(e => e.companyId === companyId && e.status === 'active'),
     [companyId]
   );
+
+  const finalPrice = useMemo(() => {
+    const mockTraining = { pricingType, basePrice, discountPercent, participantIds: selectedParticipantIds } as Training;
+    return calculateFinalPrice(mockTraining);
+  }, [pricingType, basePrice, discountPercent, selectedParticipantIds]);
 
   const toggleType = (id: string) => {
     setSelectedTypeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -79,11 +93,13 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       location,
       instructor,
       participantIds: selectedParticipantIds,
+      pricingType,
+      basePrice,
+      discountPercent,
     });
     onOpenChange(false);
   };
 
-  // Reset dependent fields when company/category changes
   const handleCompanyChange = (val: string) => {
     setCompanyId(val);
     setSelectedParticipantIds([]);
@@ -103,7 +119,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
           <DialogTitle>{training ? 'עריכת הדרכה' : 'הדרכה חדשה'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Step 1: Company */}
           <div className="space-y-2">
             <Label>חברה *</Label>
             <Select value={companyId} onValueChange={handleCompanyChange}>
@@ -116,7 +131,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             </Select>
           </div>
 
-          {/* Step 2: Category */}
           <div className="space-y-2">
             <Label>קטגוריית הדרכה *</Label>
             <Select value={categoryId} onValueChange={handleCategoryChange}>
@@ -129,17 +143,13 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             </Select>
           </div>
 
-          {/* Step 3: Sub-topics */}
           {categoryId && categorySubTopics.length > 0 && (
             <div className="space-y-2">
               <Label>נושאים *</Label>
               <div className="border rounded-md p-3 space-y-2">
                 {categorySubTopics.map(tt => (
                   <label key={tt.id} className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
-                    <Checkbox
-                      checked={selectedTypeIds.includes(tt.id)}
-                      onCheckedChange={() => toggleType(tt.id)}
-                    />
+                    <Checkbox checked={selectedTypeIds.includes(tt.id)} onCheckedChange={() => toggleType(tt.id)} />
                     <span className="flex-1 text-sm">{tt.name}</span>
                     <Badge variant="secondary" className="text-xs">{tt.validityMonths} חודשים</Badge>
                   </label>
@@ -148,14 +158,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             </div>
           )}
 
-          {/* Step 4: Employees */}
           {companyId && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>משתתפים * ({selectedParticipantIds.length}/{companyEmployees.length})</Label>
-                <Button type="button" variant="ghost" size="sm" onClick={selectAllParticipants} className="text-xs h-7">
-                  בחר הכל
-                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={selectAllParticipants} className="text-xs h-7">בחר הכל</Button>
               </div>
               {companyEmployees.length === 0 ? (
                 <p className="text-sm text-muted-foreground p-3 text-center border rounded-md">אין עובדים פעילים בחברה זו</p>
@@ -164,10 +171,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
                   <div className="space-y-1">
                     {companyEmployees.map(emp => (
                       <label key={emp.id} className="flex items-center gap-3 cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors">
-                        <Checkbox
-                          checked={selectedParticipantIds.includes(emp.id)}
-                          onCheckedChange={() => toggleParticipant(emp.id)}
-                        />
+                        <Checkbox checked={selectedParticipantIds.includes(emp.id)} onCheckedChange={() => toggleParticipant(emp.id)} />
                         <span className="flex-1 text-sm">{emp.firstName} {emp.lastName}</span>
                         <span className="text-xs text-muted-foreground">{emp.profession}</span>
                       </label>
@@ -178,7 +182,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             </div>
           )}
 
-          {/* Step 5: Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="t-date">תאריך *</Label>
@@ -192,6 +195,44 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
           <div className="space-y-2">
             <Label htmlFor="t-location">מיקום</Label>
             <Input id="t-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="מיקום ההדרכה" />
+          </div>
+
+          {/* Pricing Section */}
+          <div className="border-t pt-4 space-y-4">
+            <Label className="text-base font-semibold">תמחור</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>סוג תמחור</Label>
+                <Select value={pricingType} onValueChange={(v) => setPricingType(v as 'per_person' | 'global')}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="per_person">לפי אדם</SelectItem>
+                    <SelectItem value="global">מחיר כולל</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="t-price">מחיר בסיס (₪)</Label>
+                <Input id="t-price" type="number" min={0} value={basePrice || ''} onChange={e => setBasePrice(Number(e.target.value))} placeholder="0" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="t-discount">הנחה (%)</Label>
+                <Input id="t-discount" type="number" min={0} max={100} value={discountPercent || ''} onChange={e => setDiscountPercent(Number(e.target.value))} placeholder="0" />
+              </div>
+              <div className="space-y-2">
+                <Label>מחיר סופי</Label>
+                <div className="h-10 flex items-center px-3 rounded-md border bg-muted/50 text-sm font-semibold">
+                  ₪{finalPrice.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  {pricingType === 'per_person' && selectedParticipantIds.length > 0 && (
+                    <span className="text-muted-foreground font-normal mr-2">
+                      ({selectedParticipantIds.length} × ₪{basePrice})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

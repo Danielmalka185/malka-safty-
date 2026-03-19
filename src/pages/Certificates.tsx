@@ -1,12 +1,19 @@
 import { useState } from "react";
-import { Award, Search, Download, Building2 } from "lucide-react";
+import { Award, Search, Download, Building2, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { certificates, companies, getEmployeeName, getTrainingTypeName, getCompanyName } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import CertificatePreview from "@/components/CertificatePreview";
+import {
+  certificates, companies, employees, trainings,
+  getEmployeeName, getEmployee, getTrainingTypeName, getCompanyName,
+  getCategoryName, getTemplateForCategory,
+  type Certificate,
+} from "@/data/mockData";
 
 const statusLabels: Record<string, string> = {
   valid: 'בתוקף',
@@ -24,6 +31,7 @@ const Certificates = () => {
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [viewCert, setViewCert] = useState<Certificate | null>(null);
 
   const filtered = certificates.filter(c => {
     const matchesSearch =
@@ -34,6 +42,27 @@ const Certificates = () => {
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
     return matchesSearch && matchesCompany && matchesStatus;
   });
+
+  const getCertData = (cert: Certificate): Record<string, string> => {
+    const emp = getEmployee(cert.employeeId);
+    const training = trainings.find(t => t.id === cert.trainingId);
+    const categoryId = training?.categoryId || '';
+    return {
+      employeeName: getEmployeeName(cert.employeeId),
+      idNumber: emp?.idNumber || '',
+      companyName: getCompanyName(cert.companyId),
+      trainingType: getTrainingTypeName(cert.trainingTypeId),
+      categoryName: getCategoryName(categoryId),
+      date: cert.issueDate,
+      expiryDate: cert.expiryDate,
+      instructor: training?.instructor || '',
+    };
+  };
+
+  const getCertTemplate = (cert: Certificate) => {
+    const training = trainings.find(t => t.id === cert.trainingId);
+    return getTemplateForCategory(training?.categoryId || '');
+  };
 
   return (
     <div className="space-y-6">
@@ -47,17 +76,10 @@ const Certificates = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative max-w-sm flex-1">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="חיפוש לפי עובד, חברה או סוג הדרכה..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pr-9"
-              />
+              <Input placeholder="חיפוש לפי עובד, חברה או סוג הדרכה..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
             </div>
             <Select value={companyFilter} onValueChange={setCompanyFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="כל החברות" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[180px]"><SelectValue placeholder="כל החברות" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל החברות</SelectItem>
                 {companies.map(c => (
@@ -66,9 +88,7 @@ const Certificates = () => {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="כל הסטטוסים" />
-              </SelectTrigger>
+              <SelectTrigger className="w-[150px]"><SelectValue placeholder="כל הסטטוסים" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">כל הסטטוסים</SelectItem>
                 <SelectItem value="valid">בתוקף</SelectItem>
@@ -88,15 +108,13 @@ const Certificates = () => {
                 <TableHead className="hidden sm:table-cell">תאריך הנפקה</TableHead>
                 <TableHead>תאריך תפוגה</TableHead>
                 <TableHead>סטטוס</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-24"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    לא נמצאו תעודות
-                  </TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">לא נמצאו תעודות</TableCell>
                 </TableRow>
               ) : (
                 filtered.map((cert) => (
@@ -117,14 +135,17 @@ const Certificates = () => {
                     <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
                     <TableCell>{cert.expiryDate}</TableCell>
                     <TableCell>
-                      <Badge variant={statusVariants[cert.status]}>
-                        {statusLabels[cert.status]}
-                      </Badge>
+                      <Badge variant={statusVariants[cert.status]}>{statusLabels[cert.status]}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Download className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewCert(cert)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -133,6 +154,24 @@ const Certificates = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Certificate View Dialog */}
+      <Dialog open={!!viewCert} onOpenChange={() => setViewCert(null)}>
+        <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
+          {viewCert && (
+            <>
+              <DialogHeader>
+                <DialogTitle>תעודה — {getEmployeeName(viewCert.employeeId)}</DialogTitle>
+              </DialogHeader>
+              <CertificatePreview
+                template={getCertTemplate(viewCert)}
+                data={getCertData(viewCert)}
+                showPrintButton
+              />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
