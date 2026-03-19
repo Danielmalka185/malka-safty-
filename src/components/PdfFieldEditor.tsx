@@ -8,10 +8,7 @@ import { Trash2, Plus, Upload } from "lucide-react";
 import type { PdfField } from "@/data/mockData";
 import * as pdfjsLib from "pdfjs-dist";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = "";
 
 const availableFields = [
   { key: 'employeeName', label: 'שם העובד' },
