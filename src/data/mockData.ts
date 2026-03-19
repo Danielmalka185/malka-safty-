@@ -44,7 +44,8 @@ export interface TrainingType {
 export interface Training {
   id: string;
   companyId: string;
-  trainingTypeId: string;
+  categoryId: string;
+  trainingTypeIds: string[];
   date: string;
   location: string;
   instructor: string;
