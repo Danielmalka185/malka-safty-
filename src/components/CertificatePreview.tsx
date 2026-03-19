@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
