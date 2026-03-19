@@ -73,7 +73,7 @@ const CertificateTemplateEditor = () => {
             <Select value={selectedCategoryId} onValueChange={selectCategory}>
               <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">תבנית ברירת מחדל</SelectItem>
+                <SelectItem value="__default__">תבנית ברירת מחדל</SelectItem>
                 {trainingCategories.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
