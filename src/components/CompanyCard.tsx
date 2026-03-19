@@ -41,7 +41,8 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/50 rounded-lg p-4">
           <InfoRow icon={FileText} label="ח.פ" value={company.registrationNumber} dir="ltr" />
           <InfoRow icon={User} label="איש קשר" value={company.contactPerson} />
-          <InfoRow icon={Phone} label="טלפון" value={company.phone} dir="ltr" />
+          <InfoRow icon={Phone} label="נייד" value={company.phone} dir="ltr" />
+          {company.officePhone && <InfoRow icon={Phone} label="טלפון משרד" value={company.officePhone} dir="ltr" />}
           <InfoRow icon={Mail} label="אימייל" value={company.email} dir="ltr" />
           <InfoRow icon={MapPin} label="כתובת" value={company.address} />
           {company.mailingAddress && <InfoRow icon={Send} label="דואר" value={company.mailingAddress} />}
