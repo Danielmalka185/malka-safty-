@@ -6,6 +6,8 @@ export interface Company {
   phone: string;
   email: string;
   address: string;
+  mailingAddress: string;
+  website: string;
   notes: string;
 }
 
@@ -59,11 +61,11 @@ export interface RiskSurvey {
   imageUrls: string[];
 }
 
-export const companies: Company[] = [
-  { id: '1', name: 'חברת בנייה א.ב בע"מ', registrationNumber: '512345678', contactPerson: 'אברהם כהן', phone: '050-1234567', email: 'info@building-ab.co.il', address: 'רחוב הרצל 15, תל אביב', notes: 'לקוח ותיק' },
-  { id: '2', name: 'קבוצת גולן תשתיות', registrationNumber: '514567890', contactPerson: 'יוסי לוי', phone: '052-9876543', email: 'yossi@golan-infra.co.il', address: 'רחוב הנשיא 42, חיפה', notes: '' },
-  { id: '3', name: 'מפעלי דרום בע"מ', registrationNumber: '516789012', contactPerson: 'שרה מזרחי', phone: '054-5551234', email: 'sara@south-factories.co.il', address: 'אזור תעשייה, באר שבע', notes: 'דורש חידוש הדרכות' },
-  { id: '4', name: 'אלקטרו-טק פתרונות', registrationNumber: '518901234', contactPerson: 'דוד ביטון', phone: '053-7778899', email: 'david@electro-tek.co.il', address: 'פארק תעשיות, נתניה', notes: '' },
+export let companies: Company[] = [
+  { id: '1', name: 'חברת בנייה א.ב בע"מ', registrationNumber: '512345678', contactPerson: 'אברהם כהן', phone: '050-1234567', email: 'info@building-ab.co.il', address: 'רחוב הרצל 15, תל אביב', mailingAddress: 'ת.ד 123, תל אביב', website: 'www.building-ab.co.il', notes: 'לקוח ותיק, חברת בנייה גדולה' },
+  { id: '2', name: 'קבוצת גולן תשתיות', registrationNumber: '514567890', contactPerson: 'יוסי לוי', phone: '052-9876543', email: 'yossi@golan-infra.co.il', address: 'רחוב הנשיא 42, חיפה', mailingAddress: '', website: 'www.golan-infra.co.il', notes: '' },
+  { id: '3', name: 'מפעלי דרום בע"מ', registrationNumber: '516789012', contactPerson: 'שרה מזרחי', phone: '054-5551234', email: 'sara@south-factories.co.il', address: 'אזור תעשייה, באר שבע', mailingAddress: 'אזור תעשייה, באר שבע', website: '', notes: 'דורש חידוש הדרכות' },
+  { id: '4', name: 'אלקטרו-טק פתרונות', registrationNumber: '518901234', contactPerson: 'דוד ביטון', phone: '053-7778899', email: 'david@electro-tek.co.il', address: 'פארק תעשיות, נתניה', mailingAddress: '', website: 'www.electro-tek.co.il', notes: '' },
 ];
 
 export const employees: Employee[] = [
