@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Company, employees, trainings, riskSurveys, getTrainingTypeName } from "@/data/mockData";
+import { Company, employees, trainings, riskSurveys, getCategoryName } from "@/data/mockData";
 
 interface CompanyCardProps {
   company: Company | null;
