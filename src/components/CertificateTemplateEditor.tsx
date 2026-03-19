@@ -28,7 +28,7 @@ const placeholders = [
 
 const CertificateTemplateEditor = () => {
   const [templates, setTemplates] = useState<CertificateTemplate[]>(certificateTemplates);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__default__');
 
   const currentTemplate = templates.find(t => t.categoryId === selectedCategoryId)
     || templates.find(t => t.categoryId === '')!;
