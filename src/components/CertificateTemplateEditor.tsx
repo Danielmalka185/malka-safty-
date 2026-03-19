@@ -38,8 +38,10 @@ const CertificateTemplateEditor = () => {
 
   const selectCategory = (catId: string) => {
     setSelectedCategoryId(catId);
-    const tmpl = templates.find(t => t.categoryId === catId)
+    const effCatId = catId === '__default__' ? '' : catId;
+    const tmpl = templates.find(t => t.categoryId === effCatId)
       || templates.find(t => t.categoryId === '')!;
+    setFormState({ ...tmpl, categoryId: effCatId });
     setFormState({ ...tmpl, categoryId: catId });
   };
 
