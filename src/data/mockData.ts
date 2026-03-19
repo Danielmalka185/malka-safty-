@@ -4,6 +4,7 @@ export interface Company {
   registrationNumber: string;
   contactPerson: string;
   phone: string;
+  officePhone: string;
   email: string;
   address: string;
   mailingAddress: string;
