@@ -80,7 +80,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
               <div key={emp.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg">
                 <div>
                   <p className="font-medium text-sm">{emp.firstName} {emp.lastName}</p>
-                  <p className="text-xs text-muted-foreground">{emp.role} • ת.ז {emp.idNumber}</p>
+                  <p className="text-xs text-muted-foreground">{emp.profession} • ת.ז {emp.idNumber}</p>
                 </div>
                 <Badge variant={emp.status === 'active' ? 'default' : 'secondary'}>
                   {emp.status === 'active' ? 'פעיל' : 'לא פעיל'}
