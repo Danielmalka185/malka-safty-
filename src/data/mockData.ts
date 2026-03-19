@@ -72,12 +72,12 @@ export let companies: Company[] = [
 ];
 
 export const employees: Employee[] = [
-  { id: '1', firstName: 'משה', lastName: 'כהן', idNumber: '301234567', birthDate: '1985-03-15', phone: '050-1112233', role: 'מנהל אתר', companyId: '1', status: 'active' },
-  { id: '2', firstName: 'יעקב', lastName: 'לוי', idNumber: '302345678', birthDate: '1990-07-22', phone: '052-4445566', role: 'עובד גובה', companyId: '1', status: 'active' },
-  { id: '3', firstName: 'רחל', lastName: 'אברהם', idNumber: '303456789', birthDate: '1988-11-10', phone: '054-7778899', role: 'מהנדסת בטיחות', companyId: '2', status: 'active' },
-  { id: '4', firstName: 'אהרון', lastName: 'מזרחי', idNumber: '304567890', birthDate: '1975-01-05', phone: '053-1234567', role: 'טכנאי', companyId: '2', status: 'inactive' },
-  { id: '5', firstName: 'שירה', lastName: 'גולן', idNumber: '305678901', birthDate: '1992-06-18', phone: '050-9998877', role: 'עובדת כללית', companyId: '3', status: 'active' },
-  { id: '6', firstName: 'דניאל', lastName: 'פרץ', idNumber: '306789012', birthDate: '1983-09-30', phone: '052-6665544', role: 'מנהל עבודה', companyId: '4', status: 'active' },
+  { id: '1', firstName: 'משה', lastName: 'כהן', fatherName: 'יעקב', idNumber: '301234567', birthYear: 1985, profession: 'מנהל אתר', address: 'רחוב הרצל 10, תל אביב', phone: '050-1112233', companyId: '1', status: 'active' },
+  { id: '2', firstName: 'יעקב', lastName: 'לוי', fatherName: 'אברהם', idNumber: '302345678', birthYear: 1990, profession: 'עובד גובה', address: 'רחוב ויצמן 5, רמת גן', phone: '052-4445566', companyId: '1', status: 'active' },
+  { id: '3', firstName: 'רחל', lastName: 'אברהם', fatherName: 'דוד', idNumber: '303456789', birthYear: 1988, profession: 'מהנדסת בטיחות', address: 'רחוב הנביאים 22, חיפה', phone: '054-7778899', companyId: '2', status: 'active' },
+  { id: '4', firstName: 'אהרון', lastName: 'מזרחי', fatherName: 'שלמה', idNumber: '304567890', birthYear: 1975, profession: 'טכנאי', address: 'רחוב הגפן 8, חיפה', phone: '053-1234567', companyId: '2', status: 'inactive' },
+  { id: '5', firstName: 'שירה', lastName: 'גולן', fatherName: 'משה', idNumber: '305678901', birthYear: 1992, profession: 'עובדת כללית', address: 'שד׳ רגר 15, באר שבע', phone: '050-9998877', companyId: '3', status: 'active' },
+  { id: '6', firstName: 'דניאל', lastName: 'פרץ', fatherName: 'יוסף', idNumber: '306789012', birthYear: 1983, profession: 'מנהל עבודה', address: 'רחוב הרצוג 3, נתניה', phone: '052-6665544', companyId: '4', status: 'active' },
 ];
 
 export const trainingTypes: TrainingType[] = [
