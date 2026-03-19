@@ -16,10 +16,12 @@ export interface Employee {
   id: string;
   firstName: string;
   lastName: string;
+  fatherName: string;
   idNumber: string;
-  birthDate: string;
+  birthYear: number;
+  profession: string;
+  address: string;
   phone: string;
-  role: string;
   companyId: string;
   status: 'active' | 'inactive';
 }
