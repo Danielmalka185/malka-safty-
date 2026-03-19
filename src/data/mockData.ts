@@ -87,12 +87,22 @@ export const employees: Employee[] = [
   { id: '6', firstName: 'דניאל', lastName: 'פרץ', fatherName: 'יוסף', idNumber: '306789012', birthYear: 1983, profession: 'מנהל עבודה', address: 'רחוב הרצוג 3, נתניה', phone: '052-6665544', companyId: '4', status: 'active' },
 ];
 
-export const trainingTypes: TrainingType[] = [
-  { id: '1', name: 'עבודה בגובה – סולמות', field: 'עבודה בגובה', validityMonths: 12, requiresCertificate: true },
-  { id: '2', name: 'עבודה בגובה – פיגומים', field: 'עבודה בגובה', validityMonths: 12, requiresCertificate: true },
-  { id: '3', name: 'בטיחות אש', field: 'בטיחות כללית', validityMonths: 24, requiresCertificate: true },
-  { id: '4', name: 'עזרה ראשונה', field: 'בטיחות כללית', validityMonths: 36, requiresCertificate: true },
-  { id: '5', name: 'חומרים מסוכנים', field: 'חומרים מסוכנים', validityMonths: 12, requiresCertificate: false },
+export let trainingCategories: TrainingCategory[] = [
+  { id: 'cat1', name: 'עבודה בגובה', description: 'הדרכות הקשורות לעבודה בגובה על סוגיה' },
+  { id: 'cat2', name: 'בטיחות כללית', description: 'הדרכות בטיחות כלליות' },
+  { id: 'cat3', name: 'חומרים מסוכנים', description: 'הדרכות לטיפול בחומרים מסוכנים' },
+  { id: 'cat4', name: 'מלגזה', description: 'הדרכות להפעלת מלגזה' },
+];
+
+export let trainingTypes: TrainingType[] = [
+  { id: '1', categoryId: 'cat1', name: 'סולמות', field: 'עבודה בגובה', validityMonths: 12, requiresCertificate: true },
+  { id: '2', categoryId: 'cat1', name: 'פיגומים', field: 'עבודה בגובה', validityMonths: 12, requiresCertificate: true },
+  { id: '3', categoryId: 'cat1', name: 'במות הרמה', field: 'עבודה בגובה', validityMonths: 12, requiresCertificate: true },
+  { id: '4', categoryId: 'cat2', name: 'הדרכה כללית', field: 'בטיחות כללית', validityMonths: 24, requiresCertificate: false },
+  { id: '5', categoryId: 'cat2', name: 'בטיחות אש', field: 'בטיחות כללית', validityMonths: 24, requiresCertificate: true },
+  { id: '6', categoryId: 'cat2', name: 'עזרה ראשונה', field: 'בטיחות כללית', validityMonths: 36, requiresCertificate: true },
+  { id: '7', categoryId: 'cat3', name: 'חומרים מסוכנים', field: 'חומרים מסוכנים', validityMonths: 12, requiresCertificate: false },
+  { id: '8', categoryId: 'cat4', name: 'הפעלת מלגזה', field: 'מלגזה', validityMonths: 24, requiresCertificate: true },
 ];
 
 export const trainings: Training[] = [
