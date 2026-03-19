@@ -70,7 +70,7 @@ const Dashboard = () => {
               {trainings.slice(-4).reverse().map(training => (
                 <div key={training.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium text-sm">{getTrainingTypeName(training.trainingTypeId)}</p>
+                    <p className="font-medium text-sm">{getCategoryName(training.categoryId)}</p>
                     <p className="text-xs text-muted-foreground">{training.location}</p>
                   </div>
                   <div className="text-left">
