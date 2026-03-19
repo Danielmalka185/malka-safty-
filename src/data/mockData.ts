@@ -50,6 +50,9 @@ export interface Training {
   location: string;
   instructor: string;
   participantIds: string[];
+  pricingType: 'per_person' | 'global';
+  basePrice: number;
+  discountPercent: number;
 }
 
 export interface Certificate {
@@ -63,6 +66,21 @@ export interface Certificate {
   status: 'valid' | 'expired' | 'expiring_soon';
 }
 
+export interface CertificateTemplate {
+  id: string;
+  categoryId: string;
+  title: string;
+  bodyText: string;
+  backgroundColor: string;
+  borderColor: string;
+  textColor: string;
+  titleColor: string;
+  fontFamily: string;
+  showBorder: boolean;
+  logoText: string;
+  signatureText: string;
+}
+
 export interface RiskSurvey {
   id: string;
   siteName: string;
@@ -71,6 +89,13 @@ export interface RiskSurvey {
   findings: string;
   correctiveActions: string;
   imageUrls: string[];
+}
+
+// Helper: calculate final price
+export function calculateFinalPrice(training: Training): number {
+  const multiplier = training.pricingType === 'per_person' ? training.participantIds.length : 1;
+  const subtotal = training.basePrice * multiplier;
+  return subtotal * (1 - training.discountPercent / 100);
 }
 
 export let companies: Company[] = [
@@ -108,10 +133,10 @@ export let trainingTypes: TrainingType[] = [
 ];
 
 export let trainings: Training[] = [
-  { id: '1', companyId: '1', categoryId: 'cat1', trainingTypeIds: ['1', '2'], date: '2024-12-15', location: 'אתר בנייה תל אביב', instructor: 'ד"ר אלי שמש', participantIds: ['1', '2'] },
-  { id: '2', companyId: '2', categoryId: 'cat2', trainingTypeIds: ['5'], date: '2025-01-20', location: 'משרדי החברה, חיפה', instructor: 'מיכל רון', participantIds: ['3', '4'] },
-  { id: '3', companyId: '3', categoryId: 'cat1', trainingTypeIds: ['2'], date: '2025-02-10', location: 'אזור תעשייה באר שבע', instructor: 'ד"ר אלי שמש', participantIds: ['5'] },
-  { id: '4', companyId: '1', categoryId: 'cat2', trainingTypeIds: ['6'], date: '2025-03-05', location: 'מרכז הדרכה ראשון לציון', instructor: 'נורית כץ', participantIds: ['1', '2'] },
+  { id: '1', companyId: '1', categoryId: 'cat1', trainingTypeIds: ['1', '2'], date: '2024-12-15', location: 'אתר בנייה תל אביב', instructor: 'ד"ר אלי שמש', participantIds: ['1', '2'], pricingType: 'per_person', basePrice: 350, discountPercent: 0 },
+  { id: '2', companyId: '2', categoryId: 'cat2', trainingTypeIds: ['5'], date: '2025-01-20', location: 'משרדי החברה, חיפה', instructor: 'מיכל רון', participantIds: ['3', '4'], pricingType: 'global', basePrice: 1200, discountPercent: 10 },
+  { id: '3', companyId: '3', categoryId: 'cat1', trainingTypeIds: ['2'], date: '2025-02-10', location: 'אזור תעשייה באר שבע', instructor: 'ד"ר אלי שמש', participantIds: ['5'], pricingType: 'per_person', basePrice: 400, discountPercent: 0 },
+  { id: '4', companyId: '1', categoryId: 'cat2', trainingTypeIds: ['6'], date: '2025-03-05', location: 'מרכז הדרכה ראשון לציון', instructor: 'נורית כץ', participantIds: ['1', '2'], pricingType: 'global', basePrice: 2000, discountPercent: 15 },
 ];
 
 export let certificates: Certificate[] = [
@@ -122,6 +147,37 @@ export let certificates: Certificate[] = [
   { id: '5', employeeId: '5', companyId: '3', trainingTypeId: '2', trainingId: '3', issueDate: '2025-02-10', expiryDate: '2026-02-10', status: 'valid' },
   { id: '6', employeeId: '1', companyId: '1', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
   { id: '7', employeeId: '2', companyId: '1', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
+];
+
+export let certificateTemplates: CertificateTemplate[] = [
+  {
+    id: 'tmpl-default',
+    categoryId: '',
+    title: 'תעודת הסמכה',
+    bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
+    backgroundColor: '#ffffff',
+    borderColor: '#1a5276',
+    textColor: '#2c3e50',
+    titleColor: '#1a5276',
+    fontFamily: 'Rubik',
+    showBorder: true,
+    logoText: 'ניהול בטיחות',
+    signatureText: 'חתימת ממונה בטיחות',
+  },
+  {
+    id: 'tmpl-cat1',
+    categoryId: 'cat1',
+    title: 'תעודת הסמכה — עבודה בגובה',
+    bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
+    backgroundColor: '#fffef5',
+    borderColor: '#b8860b',
+    textColor: '#2c3e50',
+    titleColor: '#8b6914',
+    fontFamily: 'Rubik',
+    showBorder: true,
+    logoText: 'ניהול בטיחות',
+    signatureText: 'חתימת ממונה בטיחות',
+  },
 ];
 
 export const riskSurveys: RiskSurvey[] = [
@@ -140,10 +196,19 @@ export function getEmployeeName(employeeId: string): string {
   return emp ? `${emp.firstName} ${emp.lastName}` : 'לא ידוע';
 }
 
+export function getEmployee(employeeId: string): Employee | undefined {
+  return employees.find(e => e.id === employeeId);
+}
+
 export function getTrainingTypeName(typeId: string): string {
   return trainingTypes.find(t => t.id === typeId)?.name || 'לא ידוע';
 }
 
 export function getCategoryName(categoryId: string): string {
   return trainingCategories.find(c => c.id === categoryId)?.name || 'לא ידוע';
+}
+
+export function getTemplateForCategory(categoryId: string): CertificateTemplate {
+  return certificateTemplates.find(t => t.categoryId === categoryId) 
+    || certificateTemplates.find(t => t.categoryId === '')!;
 }

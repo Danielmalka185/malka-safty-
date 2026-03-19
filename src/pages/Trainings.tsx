@@ -11,12 +11,11 @@ import {
   trainings as initialTrainings,
   companies,
   trainingCategories,
-  trainingTypes,
-  employees,
   getCompanyName,
   getCategoryName,
   getTrainingTypeName,
   getEmployeeName,
+  calculateFinalPrice,
   type Training,
 } from "@/data/mockData";
 import TrainingDialog from "@/components/TrainingDialog";
@@ -26,8 +25,6 @@ const Trainings = () => {
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
-
-  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [viewTraining, setViewTraining] = useState<Training | null>(null);
@@ -52,8 +49,10 @@ const Trainings = () => {
     }
   };
 
-  const getTypeNames = (typeIds: string[]) =>
-    typeIds.map(id => getTrainingTypeName(id)).join(', ');
+  const formatPrice = (training: Training) => {
+    const final = calculateFinalPrice(training);
+    return `₪${final.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -73,12 +72,7 @@ const Trainings = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="חיפוש..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pr-9"
-              />
+              <Input placeholder="חיפוש..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
             </div>
             <Select value={filterCompany} onValueChange={setFilterCompany}>
               <SelectTrigger className="w-[180px]"><SelectValue placeholder="כל החברות" /></SelectTrigger>
@@ -104,7 +98,7 @@ const Trainings = () => {
                 <TableHead>נושאים</TableHead>
                 <TableHead>חברה</TableHead>
                 <TableHead className="hidden sm:table-cell">תאריך</TableHead>
-                <TableHead className="hidden md:table-cell">מיקום</TableHead>
+                <TableHead className="hidden md:table-cell">מחיר</TableHead>
                 <TableHead className="hidden lg:table-cell">מדריך</TableHead>
                 <TableHead>משתתפים</TableHead>
                 <TableHead className="w-[60px]"></TableHead>
@@ -113,9 +107,7 @@ const Trainings = () => {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    לא נמצאו הדרכות
-                  </TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">לא נמצאו הדרכות</TableCell>
                 </TableRow>
               ) : (
                 filtered.map((training) => (
@@ -135,7 +127,7 @@ const Trainings = () => {
                     </TableCell>
                     <TableCell>{getCompanyName(training.companyId)}</TableCell>
                     <TableCell className="hidden sm:table-cell">{training.date}</TableCell>
-                    <TableCell className="hidden md:table-cell">{training.location}</TableCell>
+                    <TableCell className="hidden md:table-cell font-medium">{formatPrice(training)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{training.instructor}</TableCell>
                     <TableCell>
                       <Badge variant="secondary">{training.participantIds.length}</Badge>
@@ -153,14 +145,8 @@ const Trainings = () => {
         </CardContent>
       </Card>
 
-      <TrainingDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        training={editingTraining}
-        onSave={handleSave}
-      />
+      <TrainingDialog open={dialogOpen} onOpenChange={setDialogOpen} training={editingTraining} onSave={handleSave} />
 
-      {/* View Training Detail Dialog */}
       <Dialog open={!!viewTraining} onOpenChange={() => setViewTraining(null)}>
         <DialogContent className="sm:max-w-lg" dir="rtl">
           {viewTraining && (
@@ -185,6 +171,30 @@ const Trainings = () => {
                   <div>
                     <span className="text-muted-foreground">מדריך:</span>
                     <p className="font-medium">{viewTraining.instructor || '—'}</p>
+                  </div>
+                </div>
+
+                {/* Pricing details */}
+                <div className="border-t pt-3">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">סוג תמחור:</span>
+                      <p className="font-medium">{viewTraining.pricingType === 'per_person' ? 'לפי אדם' : 'מחיר כולל'}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">מחיר בסיס:</span>
+                      <p className="font-medium">₪{viewTraining.basePrice.toLocaleString()}</p>
+                    </div>
+                    {viewTraining.discountPercent > 0 && (
+                      <div>
+                        <span className="text-muted-foreground">הנחה:</span>
+                        <p className="font-medium">{viewTraining.discountPercent}%</p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-muted-foreground">מחיר סופי:</span>
+                      <p className="font-semibold text-primary">{formatPrice(viewTraining)}</p>
+                    </div>
                   </div>
                 </div>
 
