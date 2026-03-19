@@ -2,7 +2,7 @@ import { Building2, Users, GraduationCap, Award, AlertTriangle } from "lucide-re
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { companies, employees, trainings, certificates, getEmployeeName, getTrainingTypeName } from "@/data/mockData";
+import { companies, employees, trainings, certificates, getEmployeeName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
   const activeEmployees = employees.filter(e => e.status === 'active').length;
@@ -70,7 +70,7 @@ const Dashboard = () => {
               {trainings.slice(-4).reverse().map(training => (
                 <div key={training.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div>
-                    <p className="font-medium text-sm">{getTrainingTypeName(training.trainingTypeId)}</p>
+                    <p className="font-medium text-sm">{getCategoryName(training.categoryId)}</p>
                     <p className="text-xs text-muted-foreground">{training.location}</p>
                   </div>
                   <div className="text-left">

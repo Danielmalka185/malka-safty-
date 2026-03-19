@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Company, employees, trainings, riskSurveys, getTrainingTypeName } from "@/data/mockData";
+import { Company, employees, trainings, riskSurveys, getCategoryName } from "@/data/mockData";
 
 interface CompanyCardProps {
   company: Company | null;
@@ -94,7 +94,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
             {companyTrainings.length > 0 ? companyTrainings.map(t => (
               <div key={t.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg">
                 <div>
-                  <p className="font-medium text-sm">{getTrainingTypeName(t.trainingTypeId)}</p>
+                  <p className="font-medium text-sm">{getCategoryName(t.categoryId)}</p>
                   <p className="text-xs text-muted-foreground">{t.location} • {t.instructor}</p>
                 </div>
                 <div className="text-left">
