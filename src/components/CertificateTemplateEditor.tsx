@@ -30,7 +30,8 @@ const CertificateTemplateEditor = () => {
   const [templates, setTemplates] = useState<CertificateTemplate[]>(certificateTemplates);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__default__');
 
-  const currentTemplate = templates.find(t => t.categoryId === selectedCategoryId)
+  const effectiveCategoryId = selectedCategoryId === '__default__' ? '' : selectedCategoryId;
+  const currentTemplate = templates.find(t => t.categoryId === effectiveCategoryId)
     || templates.find(t => t.categoryId === '')!;
 
   const [form, setFormState] = useState<CertificateTemplate>(currentTemplate);
