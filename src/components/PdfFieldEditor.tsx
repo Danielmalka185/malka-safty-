@@ -38,31 +38,38 @@ const PdfFieldEditor = ({ pdfBase64, fields, onFieldsChange, onPdfUpload }: PdfF
   const [dragging, setDragging] = useState<{ idx: number; offsetX: number; offsetY: number } | null>(null);
   const [addingField, setAddingField] = useState<string>("");
   const [scale, setScale] = useState(1);
+  const [pdfError, setPdfError] = useState<string>("");
 
   // Render PDF to canvas
   useEffect(() => {
     if (!pdfBase64 || !canvasRef.current) return;
+    setPdfError("");
     const renderPdf = async () => {
-      const data = atob(pdfBase64);
-      const uint8 = new Uint8Array(data.length);
-      for (let i = 0; i < data.length; i++) uint8[i] = data.charCodeAt(i);
+      try {
+        const data = atob(pdfBase64);
+        const uint8 = new Uint8Array(data.length);
+        for (let i = 0; i < data.length; i++) uint8[i] = data.charCodeAt(i);
 
-      const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
-      const page = await pdf.getPage(1);
-      
-      const containerWidth = containerRef.current?.clientWidth || 700;
-      const viewport = page.getViewport({ scale: 1 });
-      const s = containerWidth / viewport.width;
-      setScale(s);
-      
-      const scaledViewport = page.getViewport({ scale: s });
-      const canvas = canvasRef.current!;
-      canvas.width = scaledViewport.width;
-      canvas.height = scaledViewport.height;
-      setPdfDimensions({ width: viewport.width, height: viewport.height });
+        const pdf = await pdfjsLib.getDocument({ data: uint8 }).promise;
+        const page = await pdf.getPage(1);
+        
+        const containerWidth = containerRef.current?.clientWidth || 700;
+        const viewport = page.getViewport({ scale: 1 });
+        const s = containerWidth / viewport.width;
+        setScale(s);
+        
+        const scaledViewport = page.getViewport({ scale: s });
+        const canvas = canvasRef.current!;
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+        setPdfDimensions({ width: viewport.width, height: viewport.height });
 
-      const ctx = canvas.getContext('2d')!;
-      await page.render({ canvasContext: ctx, viewport: scaledViewport, canvas } as any).promise;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport: scaledViewport, canvas } as any).promise;
+      } catch (err) {
+        console.error("PDF render error:", err);
+        setPdfError("שגיאה בטעינת ה-PDF. נסה להעלות קובץ אחר.");
+      }
     };
     renderPdf();
   }, [pdfBase64]);
