@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Award, Search, Download } from "lucide-react";
+import { Award, Search, Download, Building2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { certificates, getEmployeeName, getTrainingTypeName } from "@/data/mockData";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { certificates, companies, getEmployeeName, getTrainingTypeName, getCompanyName } from "@/data/mockData";
 
 const statusLabels: Record<string, string> = {
   valid: 'בתוקף',
@@ -21,11 +22,18 @@ const statusVariants: Record<string, 'default' | 'destructive' | 'secondary' | '
 
 const Certificates = () => {
   const [search, setSearch] = useState("");
+  const [companyFilter, setCompanyFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const filtered = certificates.filter(c =>
-    getEmployeeName(c.employeeId).includes(search) ||
-    getTrainingTypeName(c.trainingTypeId).includes(search)
-  );
+  const filtered = certificates.filter(c => {
+    const matchesSearch =
+      getEmployeeName(c.employeeId).includes(search) ||
+      getTrainingTypeName(c.trainingTypeId).includes(search) ||
+      getCompanyName(c.companyId).includes(search);
+    const matchesCompany = companyFilter === "all" || c.companyId === companyFilter;
+    const matchesStatus = statusFilter === "all" || c.status === statusFilter;
+    return matchesSearch && matchesCompany && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
@@ -36,14 +44,38 @@ const Certificates = () => {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="relative max-w-sm">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="חיפוש לפי עובד או סוג הדרכה..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pr-9"
-            />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative max-w-sm flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="חיפוש לפי עובד, חברה או סוג הדרכה..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pr-9"
+              />
+            </div>
+            <Select value={companyFilter} onValueChange={setCompanyFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="כל החברות" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">כל החברות</SelectItem>
+                {companies.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="כל הסטטוסים" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="valid">בתוקף</SelectItem>
+                <SelectItem value="expiring_soon">עומד לפוג</SelectItem>
+                <SelectItem value="expired">פג תוקף</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -51,6 +83,7 @@ const Certificates = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>עובד</TableHead>
+                <TableHead>חברה</TableHead>
                 <TableHead>סוג הדרכה</TableHead>
                 <TableHead className="hidden sm:table-cell">תאריך הנפקה</TableHead>
                 <TableHead>תאריך תפוגה</TableHead>
@@ -59,29 +92,43 @@ const Certificates = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((cert) => (
-                <TableRow key={cert.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-muted-foreground shrink-0" />
-                      {getEmployeeName(cert.employeeId)}
-                    </div>
-                  </TableCell>
-                  <TableCell>{getTrainingTypeName(cert.trainingTypeId)}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
-                  <TableCell>{cert.expiryDate}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariants[cert.status]}>
-                      {statusLabels[cert.status]}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Download className="h-4 w-4" />
-                    </Button>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    לא נמצאו תעודות
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filtered.map((cert) => (
+                  <TableRow key={cert.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-muted-foreground shrink-0" />
+                        {getEmployeeName(cert.employeeId)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                        {getCompanyName(cert.companyId)}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getTrainingTypeName(cert.trainingTypeId)}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
+                    <TableCell>{cert.expiryDate}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariants[cert.status]}>
+                        {statusLabels[cert.status]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
