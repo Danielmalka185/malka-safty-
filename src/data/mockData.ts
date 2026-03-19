@@ -106,11 +106,11 @@ export let trainingTypes: TrainingType[] = [
   { id: '8', categoryId: 'cat4', name: 'הפעלת מלגזה', field: 'מלגזה', validityMonths: 24, requiresCertificate: true },
 ];
 
-export const trainings: Training[] = [
-  { id: '1', companyId: '1', trainingTypeId: '1', date: '2024-12-15', location: 'אתר בנייה תל אביב', instructor: 'ד"ר אלי שמש', participantIds: ['1', '2'] },
-  { id: '2', companyId: '2', trainingTypeId: '3', date: '2025-01-20', location: 'משרדי החברה, חיפה', instructor: 'מיכל רון', participantIds: ['3', '4'] },
-  { id: '3', companyId: '3', trainingTypeId: '2', date: '2025-02-10', location: 'אזור תעשייה באר שבע', instructor: 'ד"ר אלי שמש', participantIds: ['5'] },
-  { id: '4', companyId: '1', trainingTypeId: '4', date: '2025-03-05', location: 'מרכז הדרכה ראשון לציון', instructor: 'נורית כץ', participantIds: ['1', '2'] },
+export let trainings: Training[] = [
+  { id: '1', companyId: '1', categoryId: 'cat1', trainingTypeIds: ['1', '2'], date: '2024-12-15', location: 'אתר בנייה תל אביב', instructor: 'ד"ר אלי שמש', participantIds: ['1', '2'] },
+  { id: '2', companyId: '2', categoryId: 'cat2', trainingTypeIds: ['5'], date: '2025-01-20', location: 'משרדי החברה, חיפה', instructor: 'מיכל רון', participantIds: ['3', '4'] },
+  { id: '3', companyId: '3', categoryId: 'cat1', trainingTypeIds: ['2'], date: '2025-02-10', location: 'אזור תעשייה באר שבע', instructor: 'ד"ר אלי שמש', participantIds: ['5'] },
+  { id: '4', companyId: '1', categoryId: 'cat2', trainingTypeIds: ['6'], date: '2025-03-05', location: 'מרכז הדרכה ראשון לציון', instructor: 'נורית כץ', participantIds: ['1', '2'] },
 ];
 
 export const certificates: Certificate[] = [
