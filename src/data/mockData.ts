@@ -26,8 +26,15 @@ export interface Employee {
   status: 'active' | 'inactive';
 }
 
+export interface TrainingCategory {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface TrainingType {
   id: string;
+  categoryId: string;
   name: string;
   field: string;
   validityMonths: number;
