@@ -28,17 +28,20 @@ const placeholders = [
 
 const CertificateTemplateEditor = () => {
   const [templates, setTemplates] = useState<CertificateTemplate[]>(certificateTemplates);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__default__');
 
-  const currentTemplate = templates.find(t => t.categoryId === selectedCategoryId)
+  const effectiveCategoryId = selectedCategoryId === '__default__' ? '' : selectedCategoryId;
+  const currentTemplate = templates.find(t => t.categoryId === effectiveCategoryId)
     || templates.find(t => t.categoryId === '')!;
 
   const [form, setFormState] = useState<CertificateTemplate>(currentTemplate);
 
   const selectCategory = (catId: string) => {
     setSelectedCategoryId(catId);
-    const tmpl = templates.find(t => t.categoryId === catId)
+    const effCatId = catId === '__default__' ? '' : catId;
+    const tmpl = templates.find(t => t.categoryId === effCatId)
       || templates.find(t => t.categoryId === '')!;
+    setFormState({ ...tmpl, categoryId: effCatId });
     setFormState({ ...tmpl, categoryId: catId });
   };
 
@@ -70,7 +73,7 @@ const CertificateTemplateEditor = () => {
             <Select value={selectedCategoryId} onValueChange={selectCategory}>
               <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">תבנית ברירת מחדל</SelectItem>
+                <SelectItem value="__default__">תבנית ברירת מחדל</SelectItem>
                 {trainingCategories.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
