@@ -55,6 +55,7 @@ export interface Training {
 export interface Certificate {
   id: string;
   employeeId: string;
+  companyId: string;
   trainingTypeId: string;
   trainingId: string;
   issueDate: string;
