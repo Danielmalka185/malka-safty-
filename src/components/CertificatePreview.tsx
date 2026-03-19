@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, Download } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
+import { PDFDocument, rgb } from "pdf-lib";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
@@ -18,13 +19,93 @@ const defaultData: Record<string, string> = {
   date: '2025-01-01',
   expiryDate: '2026-01-01',
   instructor: 'מדריך לדוגמה',
+  birthYear: '1990',
+  profession: 'עובד כללי',
+  fatherName: 'אברהם',
 };
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
-const CertificatePreview = ({ template, data, showPrintButton = false }: CertificatePreviewProps) => {
+async function generatePdfWithFields(
+  pdfBase64: string,
+  fields: CertificateTemplate['pdfFields'],
+  data: Record<string, string>
+): Promise<Uint8Array> {
+  const pdfBytes = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0));
+  const pdfDoc = await PDFDocument.load(pdfBytes);
+  const page = pdfDoc.getPages()[0];
+
+  // Load font that supports Hebrew - use embedded font
+  // pdf-lib doesn't have built-in Hebrew font support, so we use a basic approach
+  const font = await pdfDoc.embedFont('Helvetica' as any);
+
+  for (const field of fields || []) {
+    const value = data[field.key] || '';
+    try {
+      page.drawText(value, {
+        x: field.x,
+        y: field.y,
+        size: field.fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    } catch {
+      // If text can't be drawn (e.g. unsupported chars), skip
+    }
+  }
+
+  return pdfDoc.save();
+}
+
+const PdfPreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
+  const [pdfUrl, setPdfUrl] = useState<string>('');
+  const mergedData = { ...defaultData, ...data };
+
+  useEffect(() => {
+    if (!template.pdfBase64) return;
+    
+    generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData).then(bytes => {
+      const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+      return () => URL.revokeObjectURL(url);
+    });
+  }, [template.pdfBase64, template.pdfFields, data]);
+
+  const handleDownload = async () => {
+    if (!template.pdfBase64) return;
+    const bytes = await generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData);
+    const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificate-${mergedData.employeeName}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (!template.pdfBase64) {
+    return <p className="text-center text-muted-foreground py-8">לא הועלה PDF לתבנית זו</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {pdfUrl && (
+        <iframe src={pdfUrl} className="w-full border rounded-lg" style={{ height: 500 }} />
+      )}
+      <div className="flex justify-center">
+        <Button onClick={handleDownload} variant="outline" className="gap-2">
+          <Download className="h-4 w-4" />
+          הורד PDF
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const HtmlPreview = ({ template, data, showPrintButton }: CertificatePreviewProps) => {
   const printRef = useRef<HTMLDivElement>(null);
   const mergedData = { ...defaultData, ...data };
   const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
@@ -77,7 +158,6 @@ const CertificatePreview = ({ template, data, showPrintButton = false }: Certifi
             position: 'relative',
           }}
         >
-          {/* Decorative inner border */}
           {template.showBorder && (
             <div style={{
               position: 'absolute',
@@ -86,23 +166,12 @@ const CertificatePreview = ({ template, data, showPrintButton = false }: Certifi
               pointerEvents: 'none',
             }} />
           )}
-
-          {/* Logo */}
           <div style={{ fontSize: 14, fontWeight: 600, color: template.borderColor, letterSpacing: 2 }}>
             {template.logoText}
           </div>
-
-          {/* Title */}
-          <h1 style={{
-            fontSize: 32,
-            fontWeight: 700,
-            color: template.titleColor,
-            marginTop: 16,
-          }}>
+          <h1 style={{ fontSize: 32, fontWeight: 700, color: template.titleColor, marginTop: 16 }}>
             {replacePlaceholders(template.title, mergedData)}
           </h1>
-
-          {/* Body */}
           <div style={{ fontSize: 16, lineHeight: 2, marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {bodyLines.map((line, i) => (
               <p key={i} style={{ fontWeight: line.includes(mergedData.employeeName) ? 700 : 400 }}>
@@ -110,14 +179,11 @@ const CertificatePreview = ({ template, data, showPrintButton = false }: Certifi
               </p>
             ))}
           </div>
-
-          {/* Signature */}
           <div style={{ marginTop: 24, borderTop: `1px solid ${template.textColor}40`, paddingTop: 8, fontSize: 14 }}>
             {template.signatureText}
           </div>
         </div>
       </div>
-
       {showPrintButton && (
         <div className="flex justify-center">
           <Button onClick={handlePrint} variant="outline" className="gap-2">
@@ -128,6 +194,13 @@ const CertificatePreview = ({ template, data, showPrintButton = false }: Certifi
       )}
     </div>
   );
+};
+
+const CertificatePreview = (props: CertificatePreviewProps) => {
+  if (props.template.templateType === 'pdf') {
+    return <PdfPreview template={props.template} data={{ ...defaultData, ...props.data }} />;
+  }
+  return <HtmlPreview {...props} />;
 };
 
 export default CertificatePreview;

@@ -7,12 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Save } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Save, FileText, FileUp } from "lucide-react";
 import CertificatePreview from "@/components/CertificatePreview";
+import PdfFieldEditor from "@/components/PdfFieldEditor";
 import {
   trainingCategories,
   certificateTemplates,
   type CertificateTemplate,
+  type PdfField,
 } from "@/data/mockData";
 
 const placeholders = [
@@ -41,7 +44,6 @@ const CertificateTemplateEditor = () => {
     const effCatId = catId === '__default__' ? '' : catId;
     const tmpl = templates.find(t => t.categoryId === effCatId)
       || templates.find(t => t.categoryId === '')!;
-    setFormState({ ...tmpl, categoryId: effCatId });
     setFormState({ ...tmpl, categoryId: catId });
   };
 
@@ -50,14 +52,15 @@ const CertificateTemplateEditor = () => {
   };
 
   const handleSave = () => {
+    const saveForm = { ...form, categoryId: effectiveCategoryId };
     setTemplates(prev => {
-      const idx = prev.findIndex(t => t.categoryId === form.categoryId);
+      const idx = prev.findIndex(t => t.categoryId === saveForm.categoryId);
       if (idx >= 0) {
         const updated = [...prev];
-        updated[idx] = form;
+        updated[idx] = saveForm;
         return updated;
       }
-      return [...prev, { ...form, id: `tmpl-${Date.now()}` }];
+      return [...prev, { ...saveForm, id: `tmpl-${Date.now()}` }];
     });
   };
 
@@ -84,99 +87,120 @@ const CertificateTemplateEditor = () => {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">הגדרות תבנית</CardTitle>
+            <CardTitle className="text-lg">סוג תבנית</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>כותרת התעודה</Label>
-              <Input value={form.title} onChange={e => updateField('title', e.target.value)} />
-            </div>
+          <CardContent>
+            <Tabs value={form.templateType} onValueChange={(v) => updateField('templateType', v as 'html' | 'pdf')}>
+              <TabsList className="w-full">
+                <TabsTrigger value="html" className="flex-1 gap-2">
+                  <FileText className="h-4 w-4" />
+                  עיצוב HTML
+                </TabsTrigger>
+                <TabsTrigger value="pdf" className="flex-1 gap-2">
+                  <FileUp className="h-4 w-4" />
+                  העלאת PDF
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="space-y-2">
-              <Label>לוגו (טקסט)</Label>
-              <Input value={form.logoText} onChange={e => updateField('logoText', e.target.value)} />
-            </div>
+              <TabsContent value="html" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>כותרת התעודה</Label>
+                  <Input value={form.title} onChange={e => updateField('title', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>לוגו (טקסט)</Label>
+                  <Input value={form.logoText} onChange={e => updateField('logoText', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>חתימה</Label>
+                  <Input value={form.signatureText} onChange={e => updateField('signatureText', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>טקסט גוף</Label>
+                  <Textarea
+                    value={form.bodyText}
+                    onChange={e => updateField('bodyText', e.target.value)}
+                    rows={6}
+                    className="text-sm"
+                  />
+                  <div className="flex flex-wrap gap-1">
+                    {placeholders.map(p => (
+                      <Badge key={p.key} variant="outline" className="text-xs cursor-pointer hover:bg-accent"
+                        onClick={() => updateField('bodyText', form.bodyText + p.key)}>
+                        {p.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
 
-            <div className="space-y-2">
-              <Label>חתימה</Label>
-              <Input value={form.signatureText} onChange={e => updateField('signatureText', e.target.value)} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>טקסט גוף</Label>
-              <Textarea
-                value={form.bodyText}
-                onChange={e => updateField('bodyText', e.target.value)}
-                rows={6}
-                className="text-sm"
-              />
-              <div className="flex flex-wrap gap-1">
-                {placeholders.map(p => (
-                  <Badge key={p.key} variant="outline" className="text-xs cursor-pointer hover:bg-accent"
-                    onClick={() => updateField('bodyText', form.bodyText + p.key)}>
-                    {p.label}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+              <TabsContent value="pdf" className="mt-4">
+                <PdfFieldEditor
+                  pdfBase64={form.pdfBase64 || ''}
+                  fields={form.pdfFields || []}
+                  onFieldsChange={(fields: PdfField[]) => updateField('pdfFields', fields)}
+                  onPdfUpload={(base64: string) => updateField('pdfBase64', base64)}
+                />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">עיצוב</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>צבע רקע</Label>
-                <div className="flex gap-2 items-center">
-                  <input type="color" value={form.backgroundColor} onChange={e => updateField('backgroundColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
-                  <Input value={form.backgroundColor} onChange={e => updateField('backgroundColor', e.target.value)} className="flex-1" />
+        {form.templateType === 'html' && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">עיצוב</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>צבע רקע</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={form.backgroundColor} onChange={e => updateField('backgroundColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                    <Input value={form.backgroundColor} onChange={e => updateField('backgroundColor', e.target.value)} className="flex-1" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>צבע מסגרת</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={form.borderColor} onChange={e => updateField('borderColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                    <Input value={form.borderColor} onChange={e => updateField('borderColor', e.target.value)} className="flex-1" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>צבע טקסט</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={form.textColor} onChange={e => updateField('textColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                    <Input value={form.textColor} onChange={e => updateField('textColor', e.target.value)} className="flex-1" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>צבע כותרת</Label>
+                  <div className="flex gap-2 items-center">
+                    <input type="color" value={form.titleColor} onChange={e => updateField('titleColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
+                    <Input value={form.titleColor} onChange={e => updateField('titleColor', e.target.value)} className="flex-1" />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>צבע מסגרת</Label>
-                <div className="flex gap-2 items-center">
-                  <input type="color" value={form.borderColor} onChange={e => updateField('borderColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
-                  <Input value={form.borderColor} onChange={e => updateField('borderColor', e.target.value)} className="flex-1" />
-                </div>
+              <div className="flex items-center justify-between">
+                <Label>הצג מסגרת</Label>
+                <Switch checked={form.showBorder} onCheckedChange={v => updateField('showBorder', v)} />
               </div>
               <div className="space-y-2">
-                <Label>צבע טקסט</Label>
-                <div className="flex gap-2 items-center">
-                  <input type="color" value={form.textColor} onChange={e => updateField('textColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
-                  <Input value={form.textColor} onChange={e => updateField('textColor', e.target.value)} className="flex-1" />
-                </div>
+                <Label>גופן</Label>
+                <Select value={form.fontFamily} onValueChange={v => updateField('fontFamily', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Rubik">Rubik</SelectItem>
+                    <SelectItem value="Arial">Arial</SelectItem>
+                    <SelectItem value="David">David</SelectItem>
+                    <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2">
-                <Label>צבע כותרת</Label>
-                <div className="flex gap-2 items-center">
-                  <input type="color" value={form.titleColor} onChange={e => updateField('titleColor', e.target.value)} className="w-10 h-10 rounded border cursor-pointer" />
-                  <Input value={form.titleColor} onChange={e => updateField('titleColor', e.target.value)} className="flex-1" />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Label>הצג מסגרת</Label>
-              <Switch checked={form.showBorder} onCheckedChange={v => updateField('showBorder', v)} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>גופן</Label>
-              <Select value={form.fontFamily} onValueChange={v => updateField('fontFamily', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Rubik">Rubik</SelectItem>
-                  <SelectItem value="Arial">Arial</SelectItem>
-                  <SelectItem value="David">David</SelectItem>
-                  <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <Button onClick={handleSave} className="w-full gap-2">
           <Save className="h-4 w-4" />

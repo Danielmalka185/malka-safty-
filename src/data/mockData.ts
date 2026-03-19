@@ -66,9 +66,18 @@ export interface Certificate {
   status: 'valid' | 'expired' | 'expiring_soon';
 }
 
+export interface PdfField {
+  key: string;
+  label: string;
+  x: number;
+  y: number;
+  fontSize: number;
+}
+
 export interface CertificateTemplate {
   id: string;
   categoryId: string;
+  templateType: 'html' | 'pdf';
   title: string;
   bodyText: string;
   backgroundColor: string;
@@ -79,6 +88,8 @@ export interface CertificateTemplate {
   showBorder: boolean;
   logoText: string;
   signatureText: string;
+  pdfBase64?: string;
+  pdfFields?: PdfField[];
 }
 
 export interface RiskSurvey {
@@ -153,6 +164,7 @@ export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-default',
     categoryId: '',
+    templateType: 'html',
     title: 'תעודת הסמכה',
     bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
     backgroundColor: '#ffffff',
@@ -167,6 +179,7 @@ export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-cat1',
     categoryId: 'cat1',
+    templateType: 'html',
     title: 'תעודת הסמכה — עבודה בגובה',
     bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
     backgroundColor: '#fffef5',
