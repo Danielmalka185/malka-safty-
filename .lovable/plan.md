@@ -1,72 +1,26 @@
 
 
-# העלאת תבנית PDF + מילוי שדות דינמיים
+# תיקון: עמוד הגדרות לא מציג כלום
 
-## מה רוצים
-במקום לבנות תעודה מאפס ב-HTML, לאפשר העלאת PDF מוכן (כמו אישור עבודה בגובה) ואז להגדיר איפה על הדף למקם את השדות הדינמיים — שם עובד, תאריך, ת.ז., חתימה וכו'. כשמפיקים תעודה, המערכת כותבת את הטקסט על ה-PDF במיקומים שהוגדרו.
+## הבעיה
+שתי בעיות גורמות לכך שהעמוד לא עובד כמו שצריך:
 
-## איך זה יעבוד
+1. **pdfjs-dist worker נכשל בטעינה** — ה-URL של ה-worker (`pdf.worker.min.mjs`) לא נטען מה-CDN. גרסה 5.x של pdfjs-dist דורשת טעינת worker אחרת.
 
-### זרימת המשתמש
-1. **עמוד הגדרות** → בוחר קטגוריה → לוחץ "העלה PDF תבנית"
-2. ה-PDF מוצג כתמונת רקע בעורך
-3. המשתמש **לוחץ על ה-PDF** כדי להוסיף שדה (בוחר מרשימה: שם עובד, ת.ז., תאריך וכו')
-4. גורר את השדה למיקום הנכון על הדף
-5. שומר — המערכת זוכרת את ה-PDF + מיקומי השדות
-6. **בצפייה בתעודה** → pdf-lib כותב את הטקסט על ה-PDF המקורי → הורדה
+2. **pdf-lib embedFont נכשל** — `pdfDoc.embedFont('Helvetica' as any)` לא עובד ככה. ב-pdf-lib צריך להשתמש ב-`StandardFonts.Helvetica`.
 
-### ספריות
-- **pdf-lib** — כתיבת טקסט על PDF קיים (client-side, קל, אמין)
-- **pdfjs-dist** — הצגת PDF כתמונה בעורך לצורך מיקום שדות
+## תיקונים
 
-## שינויים
-
-### `src/data/mockData.ts`
-- הוספת שדות ל-`CertificateTemplate`:
-  - `pdfBase64?: string` — ה-PDF המקורי כ-base64
-  - `templateType: 'html' | 'pdf'` — סוג התבנית
-  - `pdfFields?: Array<{ key: string, x: number, y: number, fontSize: number }>` — מיקומי שדות
-
-### `src/components/CertificateTemplateEditor.tsx`
-- הוספת אופציה לבחור בין תבנית HTML (הקיימת) לתבנית PDF
-- כפתור העלאת PDF
-- תצוגת ה-PDF כרקע עם שדות שניתן לגרור (drag) למיקום
-
-### `src/components/PdfFieldEditor.tsx` (חדש)
-- מציג את ה-PDF כתמונת רקע (canvas עם pdfjs)
-- מאפשר לחיצה להוספת שדה + גרירה למיקום
-- רשימת שדות זמינים: employeeName, idNumber, companyName, date, expiryDate, instructor, birthYear, profession, fatherName
-- לכל שדה: מיקום (x,y), גודל גופן
+### `src/components/PdfFieldEditor.tsx`
+- שינוי ה-workerSrc לנתיב שעובד עם pdfjs-dist v5: שימוש ב-`pdf.worker.min.js` (בלי `.mjs`) או טעינה מ-node_modules ישירות
+- עטיפת הרינדור ב-try/catch כדי שלא יקרוס את כל הדף
 
 ### `src/components/CertificatePreview.tsx`
-- זיהוי templateType
-- אם PDF: שימוש ב-pdf-lib למילוי השדות והצגה/הורדה
-- אם HTML: ההתנהגות הקיימת
+- תיקון embedFont להשתמש ב-`StandardFonts.Helvetica` מ-pdf-lib
 
-### `package.json`
-- התקנת `pdf-lib` ו-`pdfjs-dist`
-
-## פרטים טכניים
-
-```text
-┌──────────────────────────────────┐
-│  עורך תבניות (הגדרות)            │
-│  ┌────────────┐  ┌─────────────┐ │
-│  │ בחר סוג:   │  │  PDF רקע    │ │
-│  │ ○ HTML      │  │  + שדות     │ │
-│  │ ● PDF       │  │  גררים     │ │
-│  │             │  │  [שם עובד] │ │
-│  │ [העלה PDF]  │  │  [תאריך]   │ │
-│  │             │  │  [ת.ז.]    │ │
-│  │ שדות:       │  │             │ │
-│  │ ☑ שם עובד  │  │             │ │
-│  │ ☑ ת.ז.     │  │             │ │
-│  │ ☑ תאריך    │  │             │ │
-│  └────────────┘  └─────────────┘ │
-└──────────────────────────────────┘
-```
-
-- ה-PDF נשמר כ-base64 ב-state (בהמשך אפשר Supabase Storage)
-- pdf-lib תומך בגופנים מותאמים (כולל עברית) — נטען גופן Rubik
-- מיקומי השדות נשמרים ביחידות של ה-PDF (נקודות) כך שזה מדויק בהדפסה
+### קבצים שישתנו
+| קובץ | שינוי |
+|---|---|
+| `src/components/PdfFieldEditor.tsx` | תיקון workerSrc + error handling |
+| `src/components/CertificatePreview.tsx` | תיקון embedFont |
 
