@@ -34,6 +34,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
         registrationNumber: company.registrationNumber,
         contactPerson: company.contactPerson,
         phone: company.phone,
+        officePhone: company.officePhone,
         email: company.email,
         address: company.address,
         mailingAddress: company.mailingAddress,
@@ -41,7 +42,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
         notes: company.notes,
       });
     } else {
-      setForm({ name: '', registrationNumber: '', contactPerson: '', phone: '', email: '', address: '', mailingAddress: '', website: '', notes: '' });
+      setForm({ name: '', registrationNumber: '', contactPerson: '', phone: '', officePhone: '', email: '', address: '', mailingAddress: '', website: '', notes: '' });
     }
   }, [company, open]);
 
