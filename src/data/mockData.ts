@@ -164,6 +164,7 @@ export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-default',
     categoryId: '',
+    templateType: 'html',
     title: 'תעודת הסמכה',
     bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
     backgroundColor: '#ffffff',
