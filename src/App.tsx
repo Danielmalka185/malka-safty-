@@ -11,6 +11,7 @@ import TrainingTypes from "./pages/TrainingTypes";
 import Trainings from "./pages/Trainings";
 import Certificates from "./pages/Certificates";
 import RiskSurveys from "./pages/RiskSurveys";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
