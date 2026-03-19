@@ -62,7 +62,7 @@ const PdfFieldEditor = ({ pdfBase64, fields, onFieldsChange, onPdfUpload }: PdfF
       setPdfDimensions({ width: viewport.width, height: viewport.height });
 
       const ctx = canvas.getContext('2d')!;
-      await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+      await page.render({ canvasContext: ctx, viewport: scaledViewport, canvas } as any).promise;
     };
     renderPdf();
   }, [pdfBase64]);
