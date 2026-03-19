@@ -114,14 +114,14 @@ export let trainings: Training[] = [
   { id: '4', companyId: '1', categoryId: 'cat2', trainingTypeIds: ['6'], date: '2025-03-05', location: 'מרכז הדרכה ראשון לציון', instructor: 'נורית כץ', participantIds: ['1', '2'] },
 ];
 
-export const certificates: Certificate[] = [
-  { id: '1', employeeId: '1', trainingTypeId: '1', trainingId: '1', issueDate: '2024-12-15', expiryDate: '2025-12-15', status: 'valid' },
-  { id: '2', employeeId: '2', trainingTypeId: '1', trainingId: '1', issueDate: '2024-12-15', expiryDate: '2025-12-15', status: 'valid' },
-  { id: '3', employeeId: '3', trainingTypeId: '3', trainingId: '2', issueDate: '2025-01-20', expiryDate: '2027-01-20', status: 'valid' },
-  { id: '4', employeeId: '4', trainingTypeId: '3', trainingId: '2', issueDate: '2025-01-20', expiryDate: '2027-01-20', status: 'valid' },
-  { id: '5', employeeId: '5', trainingTypeId: '2', trainingId: '3', issueDate: '2025-02-10', expiryDate: '2026-02-10', status: 'valid' },
-  { id: '6', employeeId: '1', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
-  { id: '7', employeeId: '2', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
+export let certificates: Certificate[] = [
+  { id: '1', employeeId: '1', companyId: '1', trainingTypeId: '1', trainingId: '1', issueDate: '2024-12-15', expiryDate: '2025-12-15', status: 'valid' },
+  { id: '2', employeeId: '2', companyId: '1', trainingTypeId: '1', trainingId: '1', issueDate: '2024-12-15', expiryDate: '2025-12-15', status: 'valid' },
+  { id: '3', employeeId: '3', companyId: '2', trainingTypeId: '3', trainingId: '2', issueDate: '2025-01-20', expiryDate: '2027-01-20', status: 'valid' },
+  { id: '4', employeeId: '4', companyId: '2', trainingTypeId: '3', trainingId: '2', issueDate: '2025-01-20', expiryDate: '2027-01-20', status: 'valid' },
+  { id: '5', employeeId: '5', companyId: '3', trainingTypeId: '2', trainingId: '3', issueDate: '2025-02-10', expiryDate: '2026-02-10', status: 'valid' },
+  { id: '6', employeeId: '1', companyId: '1', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
+  { id: '7', employeeId: '2', companyId: '1', trainingTypeId: '4', trainingId: '4', issueDate: '2025-03-05', expiryDate: '2028-03-05', status: 'valid' },
 ];
 
 export const riskSurveys: RiskSurvey[] = [
