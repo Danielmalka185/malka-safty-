@@ -141,3 +141,7 @@ export function getEmployeeName(employeeId: string): string {
 export function getTrainingTypeName(typeId: string): string {
   return trainingTypes.find(t => t.id === typeId)?.name || 'לא ידוע';
 }
+
+export function getCategoryName(categoryId: string): string {
+  return trainingCategories.find(c => c.id === categoryId)?.name || 'לא ידוע';
+}
