@@ -19,6 +19,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
     registrationNumber: '',
     contactPerson: '',
     phone: '',
+    officePhone: '',
     email: '',
     address: '',
     mailingAddress: '',
@@ -33,6 +34,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
         registrationNumber: company.registrationNumber,
         contactPerson: company.contactPerson,
         phone: company.phone,
+        officePhone: company.officePhone,
         email: company.email,
         address: company.address,
         mailingAddress: company.mailingAddress,
@@ -40,7 +42,7 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
         notes: company.notes,
       });
     } else {
-      setForm({ name: '', registrationNumber: '', contactPerson: '', phone: '', email: '', address: '', mailingAddress: '', website: '', notes: '' });
+      setForm({ name: '', registrationNumber: '', contactPerson: '', phone: '', officePhone: '', email: '', address: '', mailingAddress: '', website: '', notes: '' });
     }
   }, [company, open]);
 
@@ -73,8 +75,12 @@ export function CompanyDialog({ open, onOpenChange, company, onSave }: CompanyDi
               <Input id="contactPerson" value={form.contactPerson} onChange={e => update('contactPerson', e.target.value)} required placeholder="שם איש הקשר" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phone">טלפון *</Label>
+              <Label htmlFor="phone">טלפון נייד *</Label>
               <Input id="phone" type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} required placeholder="050-0000000" dir="ltr" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="officePhone">טלפון משרד</Label>
+              <Input id="officePhone" type="tel" value={form.officePhone} onChange={e => update('officePhone', e.target.value)} placeholder="03-0000000" dir="ltr" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">דואר אלקטרוני</Label>
