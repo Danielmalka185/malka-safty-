@@ -1,26 +1,25 @@
 
 
-# תיקון: עמוד הגדרות לא מציג כלום
+# תיקון: Chrome חוסם את הדף בגלל pdfjs-dist worker
 
 ## הבעיה
-שתי בעיות גורמות לכך שהעמוד לא עובד כמו שצריך:
+`pdfjs-dist` v5 מנסה לטעון Web Worker בצורה שלא תואמת ל-Vite/Chrome בסביבת preview. ה-worker נחסם והדף קורס.
 
-1. **pdfjs-dist worker נכשל בטעינה** — ה-URL של ה-worker (`pdf.worker.min.mjs`) לא נטען מה-CDN. גרסה 5.x של pdfjs-dist דורשת טעינת worker אחרת.
+## הפתרון
+להשבית את ה-worker לגמרי (להשתמש ב-fake worker). זה פחות יעיל לקבצי PDF גדולים אבל עובד בלי בעיות. בנוסף, נעטוף את כל הטעינה ב-try/catch.
 
-2. **pdf-lib embedFont נכשל** — `pdfDoc.embedFont('Helvetica' as any)` לא עובד ככה. ב-pdf-lib צריך להשתמש ב-`StandardFonts.Helvetica`.
-
-## תיקונים
+## שינויים
 
 ### `src/components/PdfFieldEditor.tsx`
-- שינוי ה-workerSrc לנתיב שעובד עם pdfjs-dist v5: שימוש ב-`pdf.worker.min.js` (בלי `.mjs`) או טעינה מ-node_modules ישירות
-- עטיפת הרינדור ב-try/catch כדי שלא יקרוס את כל הדף
+- הסרת ה-worker configuration (`GlobalWorkerOptions.workerSrc`)
+- הגדרת `workerSrc` כ-`""` (fake worker — הכל רץ ב-main thread)
+- עטיפת `renderPdf` ב-try/catch עם הודעת שגיאה ידידותית
 
 ### `src/components/CertificatePreview.tsx`
-- תיקון embedFont להשתמש ב-`StandardFonts.Helvetica` מ-pdf-lib
+- אם יש שימוש ב-pdfjs גם כאן — אותו תיקון
 
-### קבצים שישתנו
-| קובץ | שינוי |
-|---|---|
-| `src/components/PdfFieldEditor.tsx` | תיקון workerSrc + error handling |
-| `src/components/CertificatePreview.tsx` | תיקון embedFont |
+קובץ | שינוי
+---|---
+`src/components/PdfFieldEditor.tsx` | השבתת worker + error handling
+`src/components/CertificatePreview.tsx` | בדיקה ותיקון אם רלוונטי
 
