@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
@@ -37,9 +37,7 @@ async function generatePdfWithFields(
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const page = pdfDoc.getPages()[0];
 
-  // Load font that supports Hebrew - use embedded font
-  // pdf-lib doesn't have built-in Hebrew font support, so we use a basic approach
-  const font = await pdfDoc.embedFont('Helvetica' as any);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   for (const field of fields || []) {
     const value = data[field.key] || '';
