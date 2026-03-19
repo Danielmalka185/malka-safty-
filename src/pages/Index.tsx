@@ -2,7 +2,7 @@ import { Building2, Users, GraduationCap, Award, AlertTriangle } from "lucide-re
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { companies, employees, trainings, certificates, getEmployeeName, getCategoryName } from "@/data/mockData";
+import { companies, employees, trainings, certificates, getEmployeeName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
   const activeEmployees = employees.filter(e => e.status === 'active').length;
