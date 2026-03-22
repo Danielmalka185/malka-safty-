@@ -1,19 +1,49 @@
-import { Building2, Users, GraduationCap, Award, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import { Building2, Users, GraduationCap, Award, AlertTriangle, Download } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { companies, employees, trainings, certificates, getEmployeeName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { companies, employees, trainings, certificates, getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
+  const [monthsRange, setMonthsRange] = useState("3");
+
   const activeEmployees = employees.filter(e => e.status === 'active').length;
   const thisMonthTrainings = trainings.filter(t => t.date.startsWith('2025-03')).length;
   const expiredCerts = certificates.filter(c => c.status === 'expired').length;
-  const expiringCerts = certificates.filter(c => {
-    const expiry = new Date(c.expiryDate);
-    const now = new Date();
-    const threeMonths = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-    return expiry <= threeMonths && expiry > now;
-  });
+
+  const now = new Date();
+  const rangeMs = parseInt(monthsRange) * 30 * 24 * 60 * 60 * 1000;
+  const cutoff = new Date(now.getTime() + rangeMs);
+
+  const expiringCerts = certificates
+    .filter(c => {
+      const expiry = new Date(c.expiryDate);
+      return expiry > now && expiry <= cutoff;
+    })
+    .sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
+
+  const displayedCerts = expiringCerts.slice(0, 5);
+
+  const exportCsv = () => {
+    const bom = '\uFEFF';
+    const header = 'שם עובד,חברה,סוג הדרכה,תאריך תפוגה\n';
+    const rows = expiringCerts.map(cert => {
+      const empName = getEmployeeName(cert.employeeId);
+      const compName = getCompanyName(cert.companyId);
+      const typeName = getTrainingTypeName(cert.trainingTypeId);
+      return `"${empName}","${compName}","${typeName}","${cert.expiryDate}"`;
+    }).join('\n');
+    const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expiring-certificates-${monthsRange}m.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -32,15 +62,30 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              תעודות שעומדות לפוג בקרוב
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-warning" />
+                תעודות שעומדות לפוג ({expiringCerts.length})
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <ToggleGroup type="single" value={monthsRange} onValueChange={(v) => v && setMonthsRange(v)} size="sm">
+                  <ToggleGroupItem value="1">חודש</ToggleGroupItem>
+                  <ToggleGroupItem value="2">חודשיים</ToggleGroupItem>
+                  <ToggleGroupItem value="3">3 חודשים</ToggleGroupItem>
+                </ToggleGroup>
+                {expiringCerts.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={exportCsv}>
+                    <Download className="h-4 w-4" />
+                    ייצוא
+                  </Button>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {expiringCerts.length > 0 ? (
+            {displayedCerts.length > 0 ? (
               <div className="space-y-3">
-                {expiringCerts.map(cert => (
+                {displayedCerts.map(cert => (
                   <div key={cert.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium text-sm">{getEmployeeName(cert.employeeId)}</p>
@@ -51,9 +96,14 @@ const Dashboard = () => {
                     </Badge>
                   </div>
                 ))}
+                {expiringCerts.length > 5 && (
+                  <p className="text-xs text-muted-foreground text-center pt-2">
+                    ועוד {expiringCerts.length - 5} תעודות נוספות — השתמש בייצוא לצפייה בכולן
+                  </p>
+                )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-6">אין תעודות שעומדות לפוג בקרוב</p>
+              <p className="text-sm text-muted-foreground text-center py-6">אין תעודות שעומדות לפוג בטווח הנבחר</p>
             )}
           </CardContent>
         </Card>
