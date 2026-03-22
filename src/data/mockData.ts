@@ -109,10 +109,13 @@ export function calculateFinalPrice(training: Training): number {
   return subtotal * (1 - training.discountPercent / 100);
 }
 
-export { companies } from './companiesData';
-export { employees } from './employeesData';
-export { trainings } from './trainingsData';
-export { certificates } from './certificatesData';
+import { companies as _companies } from './companiesData';
+import { employees as _employees } from './employeesData';
+import { trainings as _trainings } from './trainingsData';
+import { certificates as _certificates } from './certificatesData';
+
+export let companies = _companies;
+export const employees = _employees;
 
 export let trainingCategories: TrainingCategory[] = [
   { id: 'cat1', name: 'עבודה בגובה', description: 'הדרכות הקשורות לעבודה בגובה על סוגיה' },
@@ -138,8 +141,8 @@ export let trainingTypes: TrainingType[] = [
   { id: '14', categoryId: 'cat1', name: 'פיגומים ממוכנים', field: 'עבודה בגובה', validityMonths: 24, requiresCertificate: true },
 ];
 
-export let trainings = importedTrainings;
-export let certificates = importedCertificates;
+export let trainings = _trainings;
+export let certificates = _certificates;
 
 export let certificateTemplates: CertificateTemplate[] = [
   {
