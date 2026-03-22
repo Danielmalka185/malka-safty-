@@ -109,14 +109,10 @@ export function calculateFinalPrice(training: Training): number {
   return subtotal * (1 - training.discountPercent / 100);
 }
 
-// Data imported from separate files
-import { companies as importedCompanies } from './companiesData';
-import { employees as importedEmployees } from './employeesData';
-import { trainings as importedTrainings } from './trainingsData';
-import { certificates as importedCertificates } from './certificatesData';
-
-export let companies = importedCompanies;
-export const employees = importedEmployees;
+export { companies } from './companiesData';
+export { employees } from './employeesData';
+export { trainings } from './trainingsData';
+export { certificates } from './certificatesData';
 
 export let trainingCategories: TrainingCategory[] = [
   { id: 'cat1', name: 'עבודה בגובה', description: 'הדרכות הקשורות לעבודה בגובה על סוגיה' },
