@@ -9,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   trainingCategories,
-  getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName,
   calculateFinalPrice, type Training,
 } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
+import { Pencil } from "lucide-react";
 
 const Trainings = () => {
   const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining } = useData();
