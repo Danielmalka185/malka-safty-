@@ -148,7 +148,17 @@ const Trainings = () => {
           {viewTraining && (
             <>
               <DialogHeader>
-                <DialogTitle>{getCategoryName(viewTraining.categoryId)}</DialogTitle>
+                <div className="flex items-center justify-between">
+                  <DialogTitle>{getCategoryName(viewTraining.categoryId)}</DialogTitle>
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+                    setEditingTraining(viewTraining);
+                    setViewTraining(null);
+                    setDialogOpen(true);
+                  }}>
+                    <Pencil className="h-3.5 w-3.5" />
+                    עריכה
+                  </Button>
+                </div>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
