@@ -46,6 +46,7 @@ export interface Training {
   companyId: string;
   categoryId: string;
   trainingTypeIds: string[];
+  trainingKind: 'new' | 'renewal';
   date: string;
   location: string;
   instructor: string;
