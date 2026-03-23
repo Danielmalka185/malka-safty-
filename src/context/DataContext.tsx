@@ -35,7 +35,7 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | null>(null);
 
-export function useData() {
+export function useData(): DataContextType {
   const ctx = useContext(DataContext);
   if (!ctx) throw new Error("useData must be used within DataProvider");
   return ctx;
