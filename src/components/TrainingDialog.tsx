@@ -128,10 +128,20 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
               )}
             </div>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="t-date">תאריך *</Label>
               <Input id="t-date" type="date" value={date} onChange={e => setDate(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label>סוג הדרכה</Label>
+              <Select value={trainingKind} onValueChange={(v) => setTrainingKind(v as 'new' | 'renewal')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">הדרכה חדשה</SelectItem>
+                  <SelectItem value="renewal">ריענון</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="t-instructor">מדריך</Label>
