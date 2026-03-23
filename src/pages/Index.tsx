@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useData } from "@/context/DataContext";
-import { getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
   const { companies, employees, trainings, certificates } = useData();
