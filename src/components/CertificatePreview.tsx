@@ -125,7 +125,11 @@ export async function downloadCertificatePdf(
 
   printWindow.document.close();
   printWindow.focus();
-  setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  // For image templates, print is triggered by img onload
+  // For HTML templates, use timeout
+  if (!(template.templateType === 'image' && template.backgroundImage)) {
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  }
 }
 
 const ImagePreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
