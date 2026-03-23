@@ -1,53 +1,59 @@
 
 
-# שיפור מערכת התעודות ותהליך מלא מקצה לקצה
+# שינוי מבנה תעודות + תיקון הורדה וגופן
 
-## בעיות שזוהו
+## הבעיות שזוהו
 
-1. **תבניות לא נשמרות באמת** — `CertificateTemplateEditor` שומר ב-state מקומי, לא ב-DataContext. אין שם לתבנית, ואין חיבור ל-`getTemplateForCategory`
-2. **שדות חסרים ב-PDF** — `availableFields` ב-PdfFieldEditor לא כולל שדות כמו `birthYear`, `fatherName`, `profession` שמופיעים ב-`defaultData` של CertificatePreview
-3. **גופן עברי לא עובד ב-PDF** — `CertificatePreview` משתמש ב-`StandardFonts.Helvetica` שלא תומך עברית. צריך להטמיע גופן Rubik/David
-4. **הורדת PDF לא עובדת** — כפתור Download בטבלת התעודות (`Certificates.tsx` שורה 114) לא מחובר לשום פונקציה
-5. **תהליך מקצה לקצה חסר** — אין flow ברור: חברה → עובד → הדרכה → תעודה → הורדה
+1. **6 תעודות במקום 1** — המערכת יוצרת תעודה נפרדת לכל נושא (trainingTypeId). צריך תעודה אחת לכל עובד לכל הדרכה, עם רשימת כל הנושאים בפנים
+2. **גופן Rubik — 404** — כתובת ה-TTF שבורה, הורדת PDF נכשלת
+3. **EmployeeCard** — משתמש ב-imports סטטיים (`certificates`, `getCompanyName`) במקום DataContext
+4. **תוקף** — ייקבע לפי הנושא הראשון (הקצר ביותר)
 
-## שינויים מתוכננים
+## שינויים
 
-### 1. `src/context/DataContext.tsx` — ניהול תבניות ב-context
-- הוספת `templates` ל-state עם `addTemplate` / `updateTemplate`
-- חשיפת `getTemplateForCategory` שעובד מה-state
+### 1. `src/data/mockData.ts` — שינוי Certificate interface
+```typescript
+interface Certificate {
+  id: string;
+  employeeId: string;
+  companyId: string;
+  trainingTypeIds: string[];  // רשימת נושאים (במקום trainingTypeId יחיד)
+  trainingId: string;
+  issueDate: string;
+  expiryDate: string;
+  status: 'valid' | 'expired' | 'expiring_soon';
+}
+```
 
-### 2. `src/components/CertificateTemplateEditor.tsx` — שם תבנית + שמירה אמיתית
-- הוספת שדה "שם תבנית" בטופס
-- שמירה דרך DataContext במקום state מקומי
-- הוספת שדות חסרים ל-placeholders: שנת לידה, שם האב, מקצוע
+### 2. `src/context/DataContext.tsx` — תעודה אחת לכל משתתף
+`addCertificatesForTraining` ישתנה: במקום לולאה על `trainingTypeIds` פנימית, ייצור תעודה אחת לכל עובד עם כל ה-`trainingTypeIds` של ההדרכה. התוקף ייקבע לפי הנושא עם הוולידיות הקצרה ביותר.
 
-### 3. `src/components/PdfFieldEditor.tsx` — שדות חסרים
-- כבר כולל את השדות (birthYear, fatherName, profession) — אין שינוי
+### 3. `src/components/CertificatePreview.tsx` — תיקון גופן + תצוגת נושאים
+- החלפת URL הגופן Rubik לכתובת תקינה (Regular weight)
+- בתבנית HTML: הצגת `trainingType` כרשימת נושאים (אחד אחרי השני)
+- הורדה דרך חלון הדפסה (כמו היום, רק שעכשיו זה יעבוד עם גופן תקין)
 
-### 4. `src/components/CertificatePreview.tsx` — גופן עברי + הורדה
-- הטמעת גופן Rubik מ-Google Fonts במקום Helvetica (באמצעות `fetch` + `pdfDoc.embedFont`)
-- תיקון הורדת PDF ב-HTML mode (שימוש ב-html2canvas או print-to-pdf)
+### 4. `src/pages/Certificates.tsx` — התאמה ל-interface החדש
+- עמודת "סוג הדרכה" תציג רשימת badges של כל הנושאים
+- `getCertData` ישלח `trainingType` כמחרוזת של כל הנושאים מופרדים בפסיק/שורה חדשה
 
-### 5. `src/pages/Certificates.tsx` — חיבור כפתור הורדה
-- כפתור Download יפעיל הורדת PDF/הדפסה של התעודה הספציפית
-- שימוש ב-`getTemplateForCategory` מה-context
+### 5. `src/components/EmployeeCard.tsx` — שימוש ב-DataContext
+- החלפת imports סטטיים (`certificates`, `getCompanyName`, `getTrainingTypeName`) ב-`useData()`
 
-### 6. `src/data/mockData.ts` — עדכון `CertificateTemplate` interface
-- הוספת שדה `name` ל-interface
+### 6. `src/pages/Index.tsx` — התאמה ל-interface החדש
+- `getTrainingTypeName(cert.trainingTypeId)` → הצגת הנושא הראשון או שם הקטגוריה
 
-## סדר ביצוע
-
-| # | קובץ | פעולה |
+| # | קובץ | שינוי |
 |---|---|---|
-| 1 | `mockData.ts` | הוספת `name` ל-CertificateTemplate |
-| 2 | `DataContext.tsx` | ניהול תבניות ב-state + getTemplateForCategory |
-| 3 | `CertificateTemplateEditor.tsx` | שם תבנית + שמירה ב-context + שדות חסרים |
-| 4 | `CertificatePreview.tsx` | גופן עברי (fetch Rubik) + תיקון הורדה |
-| 5 | `Certificates.tsx` | חיבור כפתור הורדה + שימוש ב-context |
+| 1 | `mockData.ts` | `trainingTypeId` → `trainingTypeIds: string[]` |
+| 2 | `DataContext.tsx` | תעודה אחת לכל עובד, תוקף לפי הקצר |
+| 3 | `CertificatePreview.tsx` | תיקון URL גופן Rubik + הצגת רשימת נושאים |
+| 4 | `Certificates.tsx` | התאמה ל-interface + הצגת badges |
+| 5 | `EmployeeCard.tsx` | שימוש ב-useData במקום imports סטטיים |
+| 6 | `Index.tsx` | התאמה ל-interface החדש |
 
 ## תוצאה
-- תבניות נשמרות עם שם ומזוהות לפי קטגוריה
-- PDF תומך עברית עם גופן Rubik
-- הורדת תעודה עובדת מדף התעודות
-- תהליך מלא: יצירת חברה → הוספת עובד → יצירת הדרכה → תעודה נוצרת → צפייה והורדה
+- הדרכה עם 6 נושאים → תעודה אחת לכל עובד עם כל הנושאים רשומים
+- תוקף לפי הנושא הקצר ביותר
+- הורדה/הדפסה עובדת עם גופן עברי תקין
 
