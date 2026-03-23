@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GraduationCap, Plus, Search, Eye } from "lucide-react";
+import { GraduationCap, Plus, Search, Eye, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -9,14 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   trainingCategories,
-  getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName,
   calculateFinalPrice, type Training,
 } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
 
+
 const Trainings = () => {
-  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining } = useData();
+  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining, getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName } = useData();
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -148,7 +148,17 @@ const Trainings = () => {
           {viewTraining && (
             <>
               <DialogHeader>
-                <DialogTitle>{getCategoryName(viewTraining.categoryId)}</DialogTitle>
+                <div className="flex items-center justify-between">
+                  <DialogTitle>{getCategoryName(viewTraining.categoryId)}</DialogTitle>
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => {
+                    setEditingTraining(viewTraining);
+                    setViewTraining(null);
+                    setDialogOpen(true);
+                  }}>
+                    <Pencil className="h-3.5 w-3.5" />
+                    עריכה
+                  </Button>
+                </div>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">

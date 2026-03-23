@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import CertificatePreview from "@/components/CertificatePreview";
 import { useData } from "@/context/DataContext";
 import {
-  getEmployeeName, getEmployee, getTrainingTypeName, getCompanyName,
   getCategoryName, getTemplateForCategory,
   type Certificate,
 } from "@/data/mockData";
@@ -19,7 +18,7 @@ const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פ
 const statusVariants: Record<string, 'default' | 'destructive' | 'secondary' | 'outline'> = { valid: 'default', expired: 'destructive', expiring_soon: 'outline' };
 
 const Certificates = () => {
-  const { certificates, companies, trainings } = useData();
+  const { certificates, companies, trainings, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee } = useData();
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");

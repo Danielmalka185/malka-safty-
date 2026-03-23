@@ -6,10 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useData } from "@/context/DataContext";
-import { getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
-  const { companies, employees, trainings, certificates } = useData();
+  const { companies, employees, trainings, certificates, getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } = useData();
   const [monthsRange, setMonthsRange] = useState("3");
 
   const activeEmployees = employees.filter(e => e.status === 'active').length;
