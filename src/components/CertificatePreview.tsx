@@ -36,6 +36,13 @@ function replacePlaceholders(text: string, data: Record<string, string>): string
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
+// Resolve field key to data value — supports duplicate keys like "date_2" → data["date"]
+function resolveFieldValue(key: string, data: Record<string, string>): string {
+  if (data[key]) return data[key];
+  const baseKey = key.replace(/_\d+$/, '');
+  return data[baseKey] || '';
+}
+
 export async function downloadCertificatePdf(
   template: CertificateTemplate,
   data: Record<string, string>
