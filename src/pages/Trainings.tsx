@@ -16,7 +16,7 @@ import TrainingDialog from "@/components/TrainingDialog";
 import { Pencil } from "lucide-react";
 
 const Trainings = () => {
-  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining } = useData();
+  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining, getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName } = useData();
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
