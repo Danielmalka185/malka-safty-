@@ -63,16 +63,16 @@ export async function downloadCertificatePdf(
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Rubik', sans-serif; }
+          body { font-family: 'Rubik', sans-serif; display:flex; align-items:center; justify-content:center; min-height:100vh; }
           @page { size: A4 landscape; margin: 0; }
           @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-          .cert { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-          .cert img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+          .cert { width: 100vw; position: relative; }
+          .cert img { width: 100%; height: auto; display: block; }
         </style>
       </head>
       <body>
         <div class="cert">
-          <img src="${bgUrl}" />
+          <img src="${bgUrl}" onload="setTimeout(function(){window.print();window.close();},300);" />
           ${fieldsHtml}
         </div>
       </body>
@@ -125,7 +125,11 @@ export async function downloadCertificatePdf(
 
   printWindow.document.close();
   printWindow.focus();
-  setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  // For image templates, print is triggered by img onload
+  // For HTML templates, use timeout
+  if (!(template.templateType === 'image' && template.backgroundImage)) {
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  }
 }
 
 const ImagePreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
