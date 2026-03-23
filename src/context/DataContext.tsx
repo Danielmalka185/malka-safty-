@@ -105,6 +105,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const getCompanyName = useCallback((id: string) => {
+    return companies.find(c => c.id === id)?.name || 'לא ידוע';
+  }, [companies]);
+
+  const getEmployeeName = useCallback((id: string) => {
+    const emp = employees.find(e => e.id === id);
+    return emp ? `${emp.firstName} ${emp.lastName}` : 'לא ידוע';
+  }, [employees]);
+
+  const getEmployeeById = useCallback((id: string) => {
+    return employees.find(e => e.id === id);
+  }, [employees]);
+
+  const getTrainingTypeName = useCallback((id: string) => {
+    return trainingTypes.find(t => t.id === id)?.name || 'לא ידוע';
+  }, []);
+
+  const getCategoryName = useCallback((id: string) => {
+    return trainingCategories.find(c => c.id === id)?.name || 'לא ידוע';
+  }, []);
+
   return (
     <DataContext.Provider value={{
       companies, employees, trainings, certificates,
@@ -112,6 +133,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addEmployee, updateEmployee,
       addTraining, updateTraining,
       addCertificatesForTraining,
+      getCompanyName, getEmployeeName,
+      getEmployee: getEmployeeById,
+      getTrainingTypeName, getCategoryName,
     }}>
       {children}
     </DataContext.Provider>
