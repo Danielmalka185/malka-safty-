@@ -1,37 +1,35 @@
 
 
-# תיקון מיקום שדות בעורך התעודות
+# תיקון הדפסת תעודה — סנכרון בין תצוגה להדפסה
 
 ## הבעיה
-ה-`imageFields` בתבנית "עבודה בגובה" ריק (`[]`), וגם כשממקמים שדות דרך העורך — המיקום לא תואם בין העורך לבין התצוגה המקדימה וההדפסה. הסיבה: הבדלי aspect ratio בין העורך, ה-preview, וחלון ההדפסה.
+בתצוגה המקדימה (ImagePreview) ה-container שומר על aspect ratio של התמונה, אבל בחלון ההדפסה (downloadCertificatePdf) ה-container הוא `100vw x 100vh` — שזה A4 landscape (יחס 1.414:1). אם התמונה ביחס אחר, השדות זזים.
 
-## שינויים
+בנוסף, בתצוגה גודל הפונט מוקטן ב-0.7x (שורה 165) אבל בהדפסה הוא בגודל מלא — מה שגורם לטקסט להיראות שונה.
 
-### 1. `src/components/ImageFieldEditor.tsx` — תיקון aspect ratio
-- לאחד את ה-aspect ratio בין העורך לבין CertificatePreview — שניהם ישתמשו ב-`aspect-ratio` של התמונה עצמה (לא ערך קבוע)
-- הוספת grid lines עדינות כדי לעזור במיקום מדויק
+## שינוי — קובץ אחד: `CertificatePreview.tsx`
 
-### 2. `src/components/CertificatePreview.tsx` — סנכרון מיקום
-- להשתמש באותו חישוב מיקום כמו בעורך (אותו container style)
-- בחלון ההדפסה: אותו aspect ratio ואותו חישוב אחוזים
+### בפונקציית `downloadCertificatePdf` (מצב image):
+1. **שמירת aspect ratio של התמונה** — במקום `width:100vw; height:100vh`, להשתמש ב-container שמתאים את עצמו לתמונה:
+   - `width: 100vw` + `height: auto` + `aspect-ratio` לפי התמונה (או max-height עם centering)
+   - התמונה תהיה `object-fit: fill` בדיוק כמו ב-preview
+2. **גודל פונט זהה** — להשתמש באותו fontSize בלי הקטנה (בהדפסה הגודל צריך להיות מלא)
+3. **טעינת תמונה לפני הדפסה** — להוסיף `onload` על התמונה ולהפעיל `print()` רק אחרי שהתמונה נטענה (במקום `setTimeout` שרירותי)
 
-### 3. `src/data/mockData.ts` — שדות ברירת מחדל מותאמים לתמונה
-- הוספת שדות מוגדרים מראש עם מיקומים מותאמים לתמונת "אישור עבודה בגובה" שהעלית
-- המשתמש יוכל לגרור ולתקן דרך העורך אם צריך
+### שינוי קטן:
+```
+// במקום:
+.cert { width: 100vw; height: 100vh; }
 
-### 4. `src/pages/Certificates.tsx` — העשרת getCertData
-- הוספת שדות חסרים: `lastName`, `firstName`, `phone`, `companyId`, `instructorPhone` וכו'
-- שליחת נתונים אמיתיים של העובד במקום ערכי ברירת מחדל
+// יהיה:
+.cert { width: 100vw; position: relative; }
+.cert img { width: 100%; height: auto; display: block; }
+// + שדות ב-absolute positioning על גבי התמונה
+```
 
-| # | קובץ | שינוי |
-|---|---|---|
-| 1 | `ImageFieldEditor.tsx` | סנכרון aspect ratio + grid עזר |
-| 2 | `CertificatePreview.tsx` | אותו חישוב מיקום כמו בעורך |
-| 3 | `mockData.ts` | imageFields מוגדרים מראש לתבנית cat1 |
-| 4 | `Certificates.tsx` | העשרת getCertData עם כל שדות העובד/חברה/מדריך |
+כך התמונה תשמור על היחס שלה, והשדות יהיו באותו מיקום יחסי כמו בתצוגה.
 
-## תוצאה
-- מיקום שדות בעורך = בדיוק אותו מיקום ב-preview וב-PDF
-- שדות מוגדרים מראש על תמונת עבודה בגובה (אפשר לגרור ולתקן)
-- נתוני עובד אמיתיים בתעודה
+| קובץ | שינוי |
+|---|---|
+| `CertificatePreview.tsx` | תיקון layout הדפסה — aspect ratio + טעינת תמונה |
 
