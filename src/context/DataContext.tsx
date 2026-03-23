@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
-  Company, Employee, Training, Certificate,
+  Company, Employee, Training, Certificate, CertificateTemplate,
   companies as initCompanies,
   employees as initEmployees,
   trainings as initTrainings,
   certificates as initCertificates,
+  certificateTemplates as initTemplates,
   trainingTypes,
   trainingCategories,
 } from "@/data/mockData";
@@ -14,6 +15,7 @@ interface DataContextType {
   employees: Employee[];
   trainings: Training[];
   certificates: Certificate[];
+  templates: CertificateTemplate[];
   addCompany: (data: Omit<Company, 'id'>) => Company;
   updateCompany: (data: Company) => void;
   addEmployee: (data: Omit<Employee, 'id'>) => Employee;
@@ -21,6 +23,9 @@ interface DataContextType {
   addTraining: (data: Omit<Training, 'id'>) => Training;
   updateTraining: (data: Training) => void;
   addCertificatesForTraining: (training: Training) => void;
+  addTemplate: (data: Omit<CertificateTemplate, 'id'>) => CertificateTemplate;
+  updateTemplate: (data: CertificateTemplate) => void;
+  getTemplateForCategory: (categoryId: string) => CertificateTemplate;
   getCompanyName: (id: string) => string;
   getEmployeeName: (id: string) => string;
   getEmployee: (id: string) => Employee | undefined;
@@ -41,6 +46,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [employees, setEmployees] = useState<Employee[]>([...initEmployees]);
   const [trainings, setTrainings] = useState<Training[]>([...initTrainings]);
   const [certificates, setCertificates] = useState<Certificate[]>([...initCertificates]);
+  const [templates, setTemplates] = useState<CertificateTemplate[]>([...initTemplates]);
 
   const addCompany = useCallback((data: Omit<Company, 'id'>): Company => {
     const newCompany: Company = { ...data, id: `c${Date.now()}` };
@@ -106,6 +112,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const addTemplate = useCallback((data: Omit<CertificateTemplate, 'id'>): CertificateTemplate => {
+    const newTemplate: CertificateTemplate = { ...data, id: `tmpl-${Date.now()}` };
+    setTemplates(prev => [...prev, newTemplate]);
+    return newTemplate;
+  }, []);
+
+  const updateTemplate = useCallback((data: CertificateTemplate) => {
+    setTemplates(prev => prev.map(t => t.id === data.id ? data : t));
+  }, []);
+
+  const getTemplateForCategory = useCallback((categoryId: string): CertificateTemplate => {
+    return templates.find(t => t.categoryId === categoryId)
+      || templates.find(t => t.categoryId === '')
+      || templates[0];
+  }, [templates]);
+
   const getCompanyName = useCallback((id: string) => {
     return companies.find(c => c.id === id)?.name || 'לא ידוע';
   }, [companies]);
@@ -129,11 +151,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <DataContext.Provider value={{
-      companies, employees, trainings, certificates,
+      companies, employees, trainings, certificates, templates,
       addCompany, updateCompany,
       addEmployee, updateEmployee,
       addTraining, updateTraining,
       addCertificatesForTraining,
+      addTemplate, updateTemplate, getTemplateForCategory,
       getCompanyName, getEmployeeName,
       getEmployee: getEmployeeById,
       getTrainingTypeName, getCategoryName,

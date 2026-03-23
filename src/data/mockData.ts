@@ -76,6 +76,7 @@ export interface PdfField {
 
 export interface CertificateTemplate {
   id: string;
+  name: string;
   categoryId: string;
   templateType: 'html' | 'pdf';
   title: string;
@@ -147,6 +148,7 @@ export let certificates = _certificates;
 export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-default',
+    name: 'תבנית ברירת מחדל',
     categoryId: '',
     templateType: 'html',
     title: 'תעודת הסמכה',
@@ -162,6 +164,7 @@ export let certificateTemplates: CertificateTemplate[] = [
   },
   {
     id: 'tmpl-cat1',
+    name: 'תבנית עבודה בגובה',
     categoryId: 'cat1',
     templateType: 'html',
     title: 'תעודת הסמכה — עבודה בגובה',
