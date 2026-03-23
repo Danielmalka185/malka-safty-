@@ -1,35 +1,45 @@
 
 
-# תיקון הדפסת תעודה — סנכרון בין תצוגה להדפסה
+# הוספת שדה "חדש/ריענון" + שדות כפולים בתעודה
 
-## הבעיה
-בתצוגה המקדימה (ImagePreview) ה-container שומר על aspect ratio של התמונה, אבל בחלון ההדפסה (downloadCertificatePdf) ה-container הוא `100vw x 100vh` — שזה A4 landscape (יחס 1.414:1). אם התמונה ביחס אחר, השדות זזים.
+## מה צריך
 
-בנוסף, בתצוגה גודל הפונט מוקטן ב-0.7x (שורה 165) אבל בהדפסה הוא בגודל מלא — מה שגורם לטקסט להיראות שונה.
+1. **שדה "סוג הדרכה: חדש / ריענון"** — בכל הדרכה (Training) ובתעודה (Certificate)
+2. **שדה זה יופיע גם על התעודה** — כדי שרואים אם זה "חדש" או "ריענון"
+3. **אפשרות להוסיף שדה כפול** — למשל תאריך שמופיע ב-2-3 מקומות על התעודה (כל אחד במיקום אחר)
+4. **שמירת התבנית הנוכחית** — לא לאבד את מה שכבר הגדרת
 
-## שינוי — קובץ אחד: `CertificatePreview.tsx`
+## שינויים
 
-### בפונקציית `downloadCertificatePdf` (מצב image):
-1. **שמירת aspect ratio של התמונה** — במקום `width:100vw; height:100vh`, להשתמש ב-container שמתאים את עצמו לתמונה:
-   - `width: 100vw` + `height: auto` + `aspect-ratio` לפי התמונה (או max-height עם centering)
-   - התמונה תהיה `object-fit: fill` בדיוק כמו ב-preview
-2. **גודל פונט זהה** — להשתמש באותו fontSize בלי הקטנה (בהדפסה הגודל צריך להיות מלא)
-3. **טעינת תמונה לפני הדפסה** — להוסיף `onload` על התמונה ולהפעיל `print()` רק אחרי שהתמונה נטענה (במקום `setTimeout` שרירותי)
+### 1. `src/data/mockData.ts` — הוספת שדה trainingKind
+- ב-`Training` interface: הוספת `trainingKind: 'new' | 'renewal'`
+- ב-`Certificate` interface: הוספת `trainingKind: 'new' | 'renewal'`
 
-### שינוי קטן:
-```
-// במקום:
-.cert { width: 100vw; height: 100vh; }
+### 2. `src/components/TrainingDialog.tsx` — בחירת חדש/ריענון
+- הוספת Select עם שתי אפשרויות: "הדרכה חדשה" / "ריענון"
+- ברירת מחדל: "חדש"
 
-// יהיה:
-.cert { width: 100vw; position: relative; }
-.cert img { width: 100%; height: auto; display: block; }
-// + שדות ב-absolute positioning על גבי התמונה
-```
+### 3. `src/context/DataContext.tsx` — העברת trainingKind לתעודה
+- `addCertificatesForTraining` יעביר את ה-`trainingKind` מההדרכה לתעודה
 
-כך התמונה תשמור על היחס שלה, והשדות יהיו באותו מיקום יחסי כמו בתצוגה.
+### 4. `src/components/ImageFieldEditor.tsx` — שדות חדשים + אפשרות כפילות
+- הוספת שדה `trainingKind` (חדש/ריענון) לרשימת השדות הזמינים
+- **כפתור "הוסף שדה נוסף"** — מאפשר להוסיף אותו שדה יותר מפעם אחת (למשל תאריך ב-2 מקומות שונים)
+- כרגע ה-key חייב להיות ייחודי — נשנה ל-key עם סיומת מספרית (`date`, `date_2`, `date_3`)
 
-| קובץ | שינוי |
-|---|---|
-| `CertificatePreview.tsx` | תיקון layout הדפסה — aspect ratio + טעינת תמונה |
+### 5. `src/components/CertificatePreview.tsx` — תמיכה בשדות כפולים + trainingKind
+- במיפוי הנתונים: `date_2` → אותו ערך כמו `date`
+- `trainingKind` → "חדש" / "ריענון"
+
+### 6. `src/pages/Certificates.tsx` — העשרת getCertData
+- הוספת `trainingKind` לנתוני התעודה
+
+| # | קובץ | שינוי |
+|---|---|---|
+| 1 | `mockData.ts` | הוספת `trainingKind` ל-Training ו-Certificate |
+| 2 | `TrainingDialog.tsx` | Select חדש/ריענון |
+| 3 | `DataContext.tsx` | העברת trainingKind לתעודה |
+| 4 | `ImageFieldEditor.tsx` | שדה trainingKind + כפתור הוסף שדה כפול |
+| 5 | `CertificatePreview.tsx` | תמיכה בשדות כפולים + trainingKind |
+| 6 | `Certificates.tsx` | trainingKind ב-getCertData |
 
