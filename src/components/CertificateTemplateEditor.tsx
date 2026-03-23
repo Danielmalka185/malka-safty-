@@ -11,12 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, FileText, FileUp } from "lucide-react";
 import CertificatePreview from "@/components/CertificatePreview";
 import PdfFieldEditor from "@/components/PdfFieldEditor";
+import { useData } from "@/context/DataContext";
 import {
   trainingCategories,
-  certificateTemplates,
   type CertificateTemplate,
   type PdfField,
 } from "@/data/mockData";
+import { toast } from "sonner";
 
 const placeholders = [
   { key: '{employeeName}', label: 'שם העובד' },
@@ -27,10 +28,13 @@ const placeholders = [
   { key: '{date}', label: 'תאריך' },
   { key: '{expiryDate}', label: 'תאריך תפוגה' },
   { key: '{instructor}', label: 'מדריך' },
+  { key: '{birthYear}', label: 'שנת לידה' },
+  { key: '{fatherName}', label: 'שם האב' },
+  { key: '{profession}', label: 'מקצוע' },
 ];
 
 const CertificateTemplateEditor = () => {
-  const [templates, setTemplates] = useState<CertificateTemplate[]>(certificateTemplates);
+  const { templates, addTemplate, updateTemplate } = useData();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__default__');
 
   const effectiveCategoryId = selectedCategoryId === '__default__' ? '' : selectedCategoryId;
@@ -44,7 +48,7 @@ const CertificateTemplateEditor = () => {
     const effCatId = catId === '__default__' ? '' : catId;
     const tmpl = templates.find(t => t.categoryId === effCatId)
       || templates.find(t => t.categoryId === '')!;
-    setFormState({ ...tmpl, categoryId: catId });
+    setFormState({ ...tmpl });
   };
 
   const updateField = <K extends keyof CertificateTemplate>(key: K, value: CertificateTemplate[K]) => {
@@ -53,15 +57,13 @@ const CertificateTemplateEditor = () => {
 
   const handleSave = () => {
     const saveForm = { ...form, categoryId: effectiveCategoryId };
-    setTemplates(prev => {
-      const idx = prev.findIndex(t => t.categoryId === saveForm.categoryId);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = saveForm;
-        return updated;
-      }
-      return [...prev, { ...saveForm, id: `tmpl-${Date.now()}` }];
-    });
+    const existing = templates.find(t => t.id === saveForm.id);
+    if (existing) {
+      updateTemplate(saveForm);
+    } else {
+      addTemplate(saveForm);
+    }
+    toast.success(`התבנית "${saveForm.name}" נשמרה בהצלחה`);
   };
 
   return (
@@ -72,7 +74,7 @@ const CertificateTemplateEditor = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">בחר קטגוריה</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Select value={selectedCategoryId} onValueChange={selectCategory}>
               <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
               <SelectContent>
@@ -82,6 +84,10 @@ const CertificateTemplateEditor = () => {
                 ))}
               </SelectContent>
             </Select>
+            <div className="space-y-2">
+              <Label>שם התבנית</Label>
+              <Input value={form.name} onChange={e => updateField('name', e.target.value)} placeholder="לדוגמה: תבנית עבודה בגובה" />
+            </div>
           </CardContent>
         </Card>
 

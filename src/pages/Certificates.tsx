@@ -7,18 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import CertificatePreview from "@/components/CertificatePreview";
+import CertificatePreview, { downloadCertificatePdf } from "@/components/CertificatePreview";
 import { useData } from "@/context/DataContext";
-import {
-  getCategoryName, getTemplateForCategory,
-  type Certificate,
-} from "@/data/mockData";
+import type { Certificate } from "@/data/mockData";
 
 const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פג תוקף', expiring_soon: 'עומד לפוג' };
 const statusVariants: Record<string, 'default' | 'destructive' | 'secondary' | 'outline'> = { valid: 'default', expired: 'destructive', expiring_soon: 'outline' };
 
 const Certificates = () => {
-  const { certificates, companies, trainings, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee } = useData();
+  const { certificates, companies, trainings, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee, getCategoryName, getTemplateForCategory } = useData();
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -36,16 +33,29 @@ const Certificates = () => {
     const training = trainings.find(t => t.id === cert.trainingId);
     const categoryId = training?.categoryId || '';
     return {
-      employeeName: getEmployeeName(cert.employeeId), idNumber: emp?.idNumber || '',
-      companyName: getCompanyName(cert.companyId), trainingType: getTrainingTypeName(cert.trainingTypeId),
-      categoryName: getCategoryName(categoryId), date: cert.issueDate,
-      expiryDate: cert.expiryDate, instructor: training?.instructor || '',
+      employeeName: getEmployeeName(cert.employeeId),
+      idNumber: emp?.idNumber || '',
+      companyName: getCompanyName(cert.companyId),
+      trainingType: getTrainingTypeName(cert.trainingTypeId),
+      categoryName: getCategoryName(categoryId),
+      date: cert.issueDate,
+      expiryDate: cert.expiryDate,
+      instructor: training?.instructor || '',
+      birthYear: emp?.birthYear?.toString() || '',
+      fatherName: emp?.fatherName || '',
+      profession: emp?.profession || '',
     };
   };
 
   const getCertTemplate = (cert: Certificate) => {
     const training = trainings.find(t => t.id === cert.trainingId);
     return getTemplateForCategory(training?.categoryId || '');
+  };
+
+  const handleDownload = (cert: Certificate) => {
+    const template = getCertTemplate(cert);
+    const data = getCertData(cert);
+    downloadCertificatePdf(template, data);
   };
 
   return (
@@ -111,7 +121,7 @@ const Certificates = () => {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewCert(cert)}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8"><Download className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(cert)}><Download className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
                   </TableRow>

@@ -2,7 +2,8 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
@@ -24,8 +25,19 @@ const defaultData: Record<string, string> = {
   fatherName: 'אברהם',
 };
 
+const RUBIK_FONT_URL = 'https://fonts.gstatic.com/s/rubik/v28/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4iFWkU1Z4Y.ttf';
+
 function replacePlaceholders(text: string, data: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
+}
+
+let cachedFontBytes: ArrayBuffer | null = null;
+
+async function fetchRubikFont(): Promise<ArrayBuffer> {
+  if (cachedFontBytes) return cachedFontBytes;
+  const res = await fetch(RUBIK_FONT_URL);
+  cachedFontBytes = await res.arrayBuffer();
+  return cachedFontBytes;
 }
 
 async function generatePdfWithFields(
@@ -35,9 +47,12 @@ async function generatePdfWithFields(
 ): Promise<Uint8Array> {
   const pdfBytes = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0));
   const pdfDoc = await PDFDocument.load(pdfBytes);
-  const page = pdfDoc.getPages()[0];
+  pdfDoc.registerFontkit(fontkit);
 
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBytes = await fetchRubikFont();
+  const font = await pdfDoc.embedFont(fontBytes);
+
+  const page = pdfDoc.getPages()[0];
 
   for (const field of fields || []) {
     const value = data[field.key] || '';
@@ -50,11 +65,79 @@ async function generatePdfWithFields(
         color: rgb(0, 0, 0),
       });
     } catch {
-      // If text can't be drawn (e.g. unsupported chars), skip
+      // Skip unsupported chars
     }
   }
 
   return pdfDoc.save();
+}
+
+export async function downloadCertificatePdf(
+  template: CertificateTemplate,
+  data: Record<string, string>
+) {
+  const mergedData = { ...defaultData, ...data };
+
+  if (template.templateType === 'pdf' && template.pdfBase64) {
+    const bytes = await generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData);
+    const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `certificate-${mergedData.employeeName}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } else {
+    // HTML template — use print
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
+    const bodyHtml = bodyLines.map(line => 
+      `<p style="font-weight: ${line.includes(mergedData.employeeName) ? '700' : '400'}">${line}</p>`
+    ).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+      <head>
+        <meta charset="utf-8" />
+        <title>${template.title}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: '${template.fontFamily}', sans-serif; }
+          @page { size: A4 landscape; margin: 0; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          .cert {
+            width: 100vw; height: 100vh;
+            background-color: ${template.backgroundColor};
+            ${template.showBorder ? `border: 4px solid ${template.borderColor};` : ''}
+            padding: 40px 50px;
+            color: ${template.textColor};
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            text-align: center; position: relative;
+          }
+          .logo { font-size: 14px; font-weight: 600; color: ${template.borderColor}; letter-spacing: 2px; }
+          h1 { font-size: 32px; font-weight: 700; color: ${template.titleColor}; margin-top: 16px; }
+          .body { font-size: 16px; line-height: 2; margin-top: 16px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+          .sig { margin-top: 24px; border-top: 1px solid ${template.textColor}40; padding-top: 8px; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="cert">
+          <div class="logo">${template.logoText}</div>
+          <h1>${replacePlaceholders(template.title, mergedData)}</h1>
+          <div class="body">${bodyHtml}</div>
+          <div class="sig">${template.signatureText}</div>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  }
 }
 
 const PdfPreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
@@ -72,17 +155,7 @@ const PdfPreview = ({ template, data }: { template: CertificateTemplate; data: R
     });
   }, [template.pdfBase64, template.pdfFields, data]);
 
-  const handleDownload = async () => {
-    if (!template.pdfBase64) return;
-    const bytes = await generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData);
-    const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `certificate-${mergedData.employeeName}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleDownload = () => downloadCertificatePdf(template, data || {});
 
   if (!template.pdfBase64) {
     return <p className="text-center text-muted-foreground py-8">לא הועלה PDF לתבנית זו</p>;
@@ -108,31 +181,7 @@ const HtmlPreview = ({ template, data, showPrintButton }: CertificatePreviewProp
   const mergedData = { ...defaultData, ...data };
   const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
 
-  const handlePrint = () => {
-    if (!printRef.current) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html dir="rtl">
-      <head>
-        <meta charset="utf-8" />
-        <title>${template.title}</title>
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: '${template.fontFamily}', sans-serif; }
-          @page { size: A4 landscape; margin: 0; }
-          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-        </style>
-      </head>
-      <body>${printRef.current.innerHTML}</body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 300);
-  };
+  const handlePrint = () => downloadCertificatePdf(template, data || {});
 
   return (
     <div className="space-y-3">
