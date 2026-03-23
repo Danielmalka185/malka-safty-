@@ -154,6 +154,8 @@ export let trainingTypes: TrainingType[] = [
 export let trainings = _trainings;
 export let certificates = _certificates;
 
+export let instructors: Instructor[] = [];
+
 export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-default',
@@ -175,9 +177,9 @@ export let certificateTemplates: CertificateTemplate[] = [
     id: 'tmpl-cat1',
     name: 'תבנית עבודה בגובה',
     categoryId: 'cat1',
-    templateType: 'html',
+    templateType: 'image',
     title: 'תעודת הסמכה — עבודה בגובה',
-    bodyText: 'ניתנת בזאת תעודת הסמכה ל{employeeName} (ת.ז. {idNumber})\nמחברת {companyName}\n\nבגין סיום בהצלחה הדרכה בנושא:\n{trainingType}\n\nההדרכה התקיימה בתאריך {date}\nבהנחיית {instructor}\n\nתעודה זו בתוקף עד {expiryDate}',
+    bodyText: '',
     backgroundColor: '#fffef5',
     borderColor: '#b8860b',
     textColor: '#2c3e50',
@@ -186,6 +188,8 @@ export let certificateTemplates: CertificateTemplate[] = [
     showBorder: true,
     logoText: 'ניהול בטיחות',
     signatureText: 'חתימת ממונה בטיחות',
+    backgroundImage: '/certificate-bg-heights.png',
+    imageFields: [],
   },
 ];
 
