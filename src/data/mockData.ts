@@ -148,6 +148,7 @@ export let certificates = _certificates;
 export let certificateTemplates: CertificateTemplate[] = [
   {
     id: 'tmpl-default',
+    name: 'תבנית ברירת מחדל',
     categoryId: '',
     templateType: 'html',
     title: 'תעודת הסמכה',
