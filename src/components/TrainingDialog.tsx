@@ -133,7 +133,18 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             </div>
             <div className="space-y-2">
               <Label htmlFor="t-instructor">מדריך</Label>
-              <Input id="t-instructor" value={instructor} onChange={e => setInstructor(e.target.value)} placeholder="שם המדריך" />
+              {instructors.length > 0 ? (
+                <Select value={instructor} onValueChange={setInstructor}>
+                  <SelectTrigger><SelectValue placeholder="בחר מדריך" /></SelectTrigger>
+                  <SelectContent>
+                    {instructors.map(inst => (
+                      <SelectItem key={inst.id} value={inst.name}>{inst.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input id="t-instructor" value={instructor} onChange={e => setInstructor(e.target.value)} placeholder="שם המדריך" />
+              )}
             </div>
           </div>
           <div className="space-y-2">
