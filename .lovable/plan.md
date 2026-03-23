@@ -1,24 +1,31 @@
 
 
-# גיבוי נתונים לקובץ + הקלה על המערכת
+# תיקון תעודות + הוספת עריכת הדרכה
 
-## מה נעשה
+## הבעיה העיקרית — למה תעודות לא נוצרות
+פונקציות העזר (`getEmployeeName`, `getCompanyName`, וכו') ב-`mockData.ts` קוראות מהמערכים הסטטיים הריקים — לא מה-DataContext. לכן גם אם התעודות נוצרות, הן מציגות "לא ידוע" בכל מקום. צריך לתקן את זה.
 
-1. **ייצוא כל הנתונים ל-JSON** — סקריפט Python שקורא את 4 קבצי ה-TS, מחלץ את המערכים, ושומר אותם כ-4 קבצי JSON (חברות, עובדים, הדרכות, תעודות) בקובץ ZIP אחד להורדה
-2. **החלפת קבצי הנתונים במערכים ריקים** — כל קובץ ישאר עם המבנה הנכון אבל בלי נתונים (מערך ריק `[]`)
+## שינויים
 
-## קבצים
+### 1. `src/data/mockData.ts` — הפיכת helper functions לקבלת נתונים מבחוץ
+הפונקציות `getCompanyName`, `getEmployeeName`, `getTrainingTypeName` וכו' ישארו כ-fallback, אבל נוסיף גרסאות שמקבלות את המערכים כפרמטר.
 
-| קובץ | פעולה |
+### 2. `src/context/DataContext.tsx` — חשיפת helper functions שעובדות עם ה-state
+הוספת פונקציות עזר ל-context שמחפשות בתוך ה-state האמיתי:
+- `getCompanyName(id)` — מחפש ב-`companies` של ה-state
+- `getEmployeeName(id)` — מחפש ב-`employees` של ה-state
+- `getEmployee(id)`
+
+### 3. עדכון כל הדפים שמשתמשים ב-helpers
+`Trainings.tsx`, `Certificates.tsx`, `Index.tsx` — שימוש ב-helpers מה-context במקום מ-mockData
+
+### 4. `src/pages/Trainings.tsx` — כפתור עריכה
+בדיאלוג הצפייה בהדרכה, הוספת כפתור "עריכה" שפותח את `TrainingDialog` עם הנתונים הקיימים
+
+| קובץ | שינוי |
 |---|---|
-| סקריפט חד-פעמי | ייצוא ל-`/mnt/documents/safety-data-backup.zip` (4 קבצי JSON) |
-| `src/data/companiesData.ts` | 1,442 שורות → מערך ריק |
-| `src/data/employeesData.ts` | 7,465 שורות → מערך ריק |
-| `src/data/trainingsData.ts` | 4,697 שורות → מערך ריק |
-| `src/data/certificatesData.ts` | 37,170 שורות → מערך ריק |
-
-## תוצאה
-- קובץ ZIP להורדה עם כל הנתונים האמיתיים
-- מערכת מהירה עם מערכים ריקים
-- כשהמוצר מוכן — נטען את הנתונים חזרה (לתוך Supabase או חזרה לקבצים)
+| `src/context/DataContext.tsx` | הוספת helper functions שעובדות עם ה-state |
+| `src/pages/Trainings.tsx` | שימוש ב-helpers מ-context + כפתור עריכה בדיאלוג צפייה |
+| `src/pages/Certificates.tsx` | שימוש ב-helpers מ-context |
+| `src/pages/Index.tsx` | שימוש ב-helpers מ-context |
 
