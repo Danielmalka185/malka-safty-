@@ -18,7 +18,7 @@ interface TrainingDialogProps {
 }
 
 const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialogProps) => {
-  const { companies, employees } = useData();
+  const { companies, employees, instructors } = useData();
   const [companyId, setCompanyId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
