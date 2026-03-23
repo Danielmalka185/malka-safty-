@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { companies as companiesData, employees, Company } from "@/data/mockData";
+import { Company } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 import { CompanyDialog } from "@/components/CompanyDialog";
 import { CompanyCard } from "@/components/CompanyCard";
 
 const Companies = () => {
+  const { companies, employees, addCompany, updateCompany } = useData();
   const [search, setSearch] = useState("");
-  const [companies, setCompanies] = useState<Company[]>(companiesData);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
@@ -24,13 +25,10 @@ const Companies = () => {
 
   const handleSave = (data: Omit<Company, 'id'> & { id?: string }) => {
     if (data.id) {
-      setCompanies(prev => prev.map(c => c.id === data.id ? { ...c, ...data } as Company : c));
+      updateCompany(data as Company);
     } else {
-      const newCompany: Company = {
-        ...data,
-        id: String(Date.now()),
-      } as Company;
-      setCompanies(prev => [...prev, newCompany]);
+      const { id, ...rest } = data as any;
+      addCompany(rest);
     }
   };
 
@@ -68,28 +66,13 @@ const Companies = () => {
       <div className="flex items-center gap-3">
         <div className="relative max-w-md flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="חיפוש לפי שם, ח.פ או איש קשר..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pr-9"
-          />
+          <Input placeholder="חיפוש לפי שם, ח.פ או איש קשר..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-9" />
         </div>
         <div className="flex border border-border rounded-md">
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-            size="icon"
-            className="h-9 w-9 rounded-l-none"
-            onClick={() => setViewMode('grid')}
-          >
+          <Button variant={viewMode === 'grid' ? 'default' : 'ghost'} size="icon" className="h-9 w-9 rounded-l-none" onClick={() => setViewMode('grid')}>
             <LayoutGrid className="h-4 w-4" />
           </Button>
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'ghost'}
-            size="icon"
-            className="h-9 w-9 rounded-r-none"
-            onClick={() => setViewMode('list')}
-          >
+          <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="icon" className="h-9 w-9 rounded-r-none" onClick={() => setViewMode('list')}>
             <List className="h-4 w-4" />
           </Button>
         </div>
@@ -98,11 +81,7 @@ const Companies = () => {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((company) => (
-            <Card
-              key={company.id}
-              className="cursor-pointer hover:shadow-md transition-shadow border-border/60 hover:border-primary/30"
-              onClick={() => handleView(company)}
-            >
+            <Card key={company.id} className="cursor-pointer hover:shadow-md transition-shadow border-border/60 hover:border-primary/30" onClick={() => handleView(company)}>
               <CardContent className="p-5">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2.5">
@@ -119,7 +98,6 @@ const Companies = () => {
                     {getActiveEmployeeCount(company.id)}/{getEmployeeCount(company.id)}
                   </Badge>
                 </div>
-
                 <div className="space-y-1.5 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <span className="font-medium text-foreground">{company.contactPerson}</span>
@@ -142,22 +120,11 @@ const Companies = () => {
                     </div>
                   )}
                 </div>
-
                 {company.notes && (
-                  <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50 line-clamp-2">
-                    {company.notes}
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50 line-clamp-2">{company.notes}</p>
                 )}
-
                 <div className="flex justify-end mt-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs h-7"
-                    onClick={(e) => { e.stopPropagation(); handleEdit(company); }}
-                  >
-                    עריכה
-                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs h-7" onClick={(e) => { e.stopPropagation(); handleEdit(company); }}>עריכה</Button>
                 </div>
               </CardContent>
             </Card>
@@ -180,11 +147,7 @@ const Companies = () => {
             </TableHeader>
             <TableBody>
               {filtered.map((company) => (
-                <TableRow
-                  key={company.id}
-                  className="cursor-pointer"
-                  onClick={() => handleView(company)}
-                >
+                <TableRow key={company.id} className="cursor-pointer" onClick={() => handleView(company)}>
                   <TableCell className="font-medium">{company.name}</TableCell>
                   <TableCell dir="ltr" className="text-right">{company.registrationNumber}</TableCell>
                   <TableCell>{company.contactPerson}</TableCell>
@@ -198,14 +161,7 @@ const Companies = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs h-7"
-                      onClick={(e) => { e.stopPropagation(); handleEdit(company); }}
-                    >
-                      עריכה
-                    </Button>
+                    <Button variant="ghost" size="sm" className="text-xs h-7" onClick={(e) => { e.stopPropagation(); handleEdit(company); }}>עריכה</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -221,19 +177,8 @@ const Companies = () => {
         </div>
       )}
 
-      <CompanyDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        company={editingCompany}
-        onSave={handleSave}
-      />
-
-      <CompanyCard
-        company={viewingCompany}
-        open={cardOpen}
-        onOpenChange={setCardOpen}
-        onEdit={handleEdit}
-      />
+      <CompanyDialog open={dialogOpen} onOpenChange={setDialogOpen} company={editingCompany} onSave={handleSave} />
+      <CompanyCard company={viewingCompany} open={cardOpen} onOpenChange={setCardOpen} onEdit={handleEdit} />
     </div>
   );
 };

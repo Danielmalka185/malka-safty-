@@ -8,20 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  trainings as initialTrainings,
-  companies,
   trainingCategories,
-  getCompanyName,
-  getCategoryName,
-  getTrainingTypeName,
-  getEmployeeName,
-  calculateFinalPrice,
-  type Training,
+  getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName,
+  calculateFinalPrice, type Training,
 } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
 
 const Trainings = () => {
-  const [allTrainings, setAllTrainings] = useState<Training[]>(initialTrainings);
+  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining } = useData();
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -42,10 +37,11 @@ const Trainings = () => {
 
   const handleSave = (data: Omit<Training, 'id'> & { id?: string }) => {
     if (data.id) {
-      setAllTrainings(prev => prev.map(t => t.id === data.id ? { ...t, ...data, id: data.id! } : t));
+      updateTraining(data as Training);
     } else {
-      const newTraining: Training = { ...data, id: `tr${Date.now()}` };
-      setAllTrainings(prev => [...prev, newTraining]);
+      const { id, ...rest } = data as any;
+      const newTraining = addTraining(rest);
+      addCertificatesForTraining(newTraining);
     }
   };
 
@@ -156,63 +152,29 @@ const Trainings = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">חברה:</span>
-                    <p className="font-medium">{getCompanyName(viewTraining.companyId)}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">תאריך:</span>
-                    <p className="font-medium">{viewTraining.date}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">מיקום:</span>
-                    <p className="font-medium">{viewTraining.location || '—'}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">מדריך:</span>
-                    <p className="font-medium">{viewTraining.instructor || '—'}</p>
-                  </div>
+                  <div><span className="text-muted-foreground">חברה:</span><p className="font-medium">{getCompanyName(viewTraining.companyId)}</p></div>
+                  <div><span className="text-muted-foreground">תאריך:</span><p className="font-medium">{viewTraining.date}</p></div>
+                  <div><span className="text-muted-foreground">מיקום:</span><p className="font-medium">{viewTraining.location || '—'}</p></div>
+                  <div><span className="text-muted-foreground">מדריך:</span><p className="font-medium">{viewTraining.instructor || '—'}</p></div>
                 </div>
-
-                {/* Pricing details */}
                 <div className="border-t pt-3">
                   <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">סוג תמחור:</span>
-                      <p className="font-medium">{viewTraining.pricingType === 'per_person' ? 'לפי אדם' : 'מחיר כולל'}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">מחיר בסיס:</span>
-                      <p className="font-medium">₪{viewTraining.basePrice.toLocaleString()}</p>
-                    </div>
-                    {viewTraining.discountPercent > 0 && (
-                      <div>
-                        <span className="text-muted-foreground">הנחה:</span>
-                        <p className="font-medium">{viewTraining.discountPercent}%</p>
-                      </div>
-                    )}
-                    <div>
-                      <span className="text-muted-foreground">מחיר סופי:</span>
-                      <p className="font-semibold text-primary">{formatPrice(viewTraining)}</p>
-                    </div>
+                    <div><span className="text-muted-foreground">סוג תמחור:</span><p className="font-medium">{viewTraining.pricingType === 'per_person' ? 'לפי אדם' : 'מחיר כולל'}</p></div>
+                    <div><span className="text-muted-foreground">מחיר בסיס:</span><p className="font-medium">₪{viewTraining.basePrice.toLocaleString()}</p></div>
+                    {viewTraining.discountPercent > 0 && <div><span className="text-muted-foreground">הנחה:</span><p className="font-medium">{viewTraining.discountPercent}%</p></div>}
+                    <div><span className="text-muted-foreground">מחיר סופי:</span><p className="font-semibold text-primary">{formatPrice(viewTraining)}</p></div>
                   </div>
                 </div>
-
                 <div>
                   <span className="text-sm text-muted-foreground">נושאים:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {viewTraining.trainingTypeIds.map(id => (
-                      <Badge key={id} variant="default">{getTrainingTypeName(id)}</Badge>
-                    ))}
+                    {viewTraining.trainingTypeIds.map(id => <Badge key={id} variant="default">{getTrainingTypeName(id)}</Badge>)}
                   </div>
                 </div>
-
                 <div>
                   <span className="text-sm text-muted-foreground">משתתפים ({viewTraining.participantIds.length}):</span>
                   <div className="mt-1 space-y-1">
-                    {viewTraining.participantIds.map(id => (
-                      <p key={id} className="text-sm font-medium">{getEmployeeName(id)}</p>
-                    ))}
+                    {viewTraining.participantIds.map(id => <p key={id} className="text-sm font-medium">{getEmployeeName(id)}</p>)}
                   </div>
                 </div>
               </div>
