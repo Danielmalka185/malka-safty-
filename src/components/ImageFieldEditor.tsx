@@ -33,12 +33,18 @@ const availableFields = [
   { group: 'הדרכה', fields: [
     { key: 'trainingType', label: 'נושאי הדרכה' },
     { key: 'categoryName', label: 'קטגוריה' },
+    { key: 'trainingKind', label: 'חדש/ריענון' },
     { key: 'date', label: 'תאריך' },
     { key: 'expiryDate', label: 'תאריך תפוגה' },
   ]},
 ];
 
 const allFields = availableFields.flatMap(g => g.fields);
+
+// Get base key without numeric suffix (e.g., "date_2" → "date")
+function getBaseKey(key: string): string {
+  return key.replace(/_\d+$/, '');
+}
 
 interface ImageFieldEditorProps {
   backgroundImage: string;
