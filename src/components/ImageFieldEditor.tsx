@@ -86,10 +86,16 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
     const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
-    const fieldInfo = allFields.find(f => f.key === addingField);
+    const baseKey = getBaseKey(addingField);
+    const fieldInfo = allFields.find(f => f.key === baseKey);
     if (!fieldInfo) return;
 
-    onFieldsChange([...fields, { key: addingField, label: fieldInfo.label, xPercent, yPercent, fontSize: 14, color: '#000000' }]);
+    // Generate unique key with suffix if duplicate
+    const existingCount = fields.filter(f => getBaseKey(f.key) === baseKey).length;
+    const fieldKey = existingCount > 0 ? `${baseKey}_${existingCount + 1}` : baseKey;
+    const label = existingCount > 0 ? `${fieldInfo.label} (${existingCount + 1})` : fieldInfo.label;
+
+    onFieldsChange([...fields, { key: fieldKey, label, xPercent, yPercent, fontSize: 14, color: '#000000' }]);
     setAddingField("");
   };
 
