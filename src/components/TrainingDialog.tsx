@@ -60,7 +60,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId || !categoryId || selectedTypeIds.length === 0 || selectedParticipantIds.length === 0 || !date) return;
-    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
+    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, trainingKind, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
     onOpenChange(false);
   };
 
