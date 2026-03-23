@@ -124,7 +124,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     onFieldsChange(updated);
   };
 
-  const usedKeys = new Set(fields.map(f => f.key));
+  // No longer filter out used keys — allow duplicates
 
   if (!backgroundImage) {
     return (
