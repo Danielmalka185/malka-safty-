@@ -189,7 +189,19 @@ export let certificateTemplates: CertificateTemplate[] = [
     logoText: 'ניהול בטיחות',
     signatureText: 'חתימת ממונה בטיחות',
     backgroundImage: '/certificate-bg-heights.png',
-    imageFields: [],
+    imageFields: [
+      { key: 'lastName', label: 'שם משפחה', xPercent: 72, yPercent: 33, fontSize: 16, color: '#1a1a2e' },
+      { key: 'firstName', label: 'שם פרטי', xPercent: 85, yPercent: 33, fontSize: 16, color: '#1a1a2e' },
+      { key: 'idNumber', label: 'תעודת זהות', xPercent: 30, yPercent: 33, fontSize: 16, color: '#1a1a2e' },
+      { key: 'birthYear', label: 'שנת לידה', xPercent: 50, yPercent: 33, fontSize: 14, color: '#1a1a2e' },
+      { key: 'fatherName', label: 'שם האב', xPercent: 50, yPercent: 38, fontSize: 14, color: '#1a1a2e' },
+      { key: 'profession', label: 'מקצוע', xPercent: 78, yPercent: 38, fontSize: 14, color: '#1a1a2e' },
+      { key: 'companyName', label: 'שם חברה', xPercent: 78, yPercent: 43, fontSize: 14, color: '#1a1a2e' },
+      { key: 'trainingType', label: 'נושאי הדרכה', xPercent: 50, yPercent: 55, fontSize: 14, color: '#1a1a2e' },
+      { key: 'date', label: 'תאריך', xPercent: 78, yPercent: 65, fontSize: 14, color: '#1a1a2e' },
+      { key: 'expiryDate', label: 'תאריך תפוגה', xPercent: 30, yPercent: 65, fontSize: 14, color: '#1a1a2e' },
+      { key: 'instructor', label: 'שם מדריך', xPercent: 78, yPercent: 80, fontSize: 14, color: '#1a1a2e' },
+    ],
   },
 ];
 
