@@ -78,38 +78,46 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setTrainings(prev => prev.map(t => t.id === data.id ? data : t));
   }, []);
 
+  // One certificate per participant with ALL training type IDs
+  // Expiry based on the FIRST (shortest validity) training type
   const addCertificatesForTraining = useCallback((training: Training) => {
-    const newCerts: Certificate[] = [];
-    for (const participantId of training.participantIds) {
-      for (const typeId of training.trainingTypeIds) {
-        const tt = trainingTypes.find(t => t.id === typeId);
-        if (!tt || !tt.requiresCertificate) continue;
-        const issueDate = training.date;
-        const expiry = new Date(issueDate);
-        expiry.setMonth(expiry.getMonth() + tt.validityMonths);
-        const expiryDate = expiry.toISOString().split('T')[0];
-        
-        const now = new Date();
-        const threeMonths = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-        let status: Certificate['status'] = 'valid';
-        if (expiry < now) status = 'expired';
-        else if (expiry <= threeMonths) status = 'expiring_soon';
+    // Filter to only types that require certificates
+    const certTypeIds = training.trainingTypeIds.filter(typeId => {
+      const tt = trainingTypes.find(t => t.id === typeId);
+      return tt?.requiresCertificate;
+    });
 
-        newCerts.push({
-          id: `cert${Date.now()}-${participantId}-${typeId}`,
-          employeeId: participantId,
-          companyId: training.companyId,
-          trainingTypeId: typeId,
-          trainingId: training.id,
-          issueDate,
-          expiryDate,
-          status,
-        });
-      }
-    }
-    if (newCerts.length > 0) {
-      setCertificates(prev => [...prev, ...newCerts]);
-    }
+    if (certTypeIds.length === 0) return;
+
+    // Find the shortest validity for expiry calculation
+    const shortestValidity = certTypeIds.reduce((min, typeId) => {
+      const tt = trainingTypes.find(t => t.id === typeId);
+      return tt ? Math.min(min, tt.validityMonths) : min;
+    }, Infinity);
+
+    const issueDate = training.date;
+    const expiry = new Date(issueDate);
+    expiry.setMonth(expiry.getMonth() + shortestValidity);
+    const expiryDate = expiry.toISOString().split('T')[0];
+
+    const now = new Date();
+    const threeMonths = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    let status: Certificate['status'] = 'valid';
+    if (expiry < now) status = 'expired';
+    else if (expiry <= threeMonths) status = 'expiring_soon';
+
+    const newCerts: Certificate[] = training.participantIds.map(participantId => ({
+      id: `cert${Date.now()}-${participantId}`,
+      employeeId: participantId,
+      companyId: training.companyId,
+      trainingTypeIds: certTypeIds,
+      trainingId: training.id,
+      issueDate,
+      expiryDate,
+      status,
+    }));
+
+    setCertificates(prev => [...prev, ...newCerts]);
   }, []);
 
   const addTemplate = useCallback((data: Omit<CertificateTemplate, 'id'>): CertificateTemplate => {

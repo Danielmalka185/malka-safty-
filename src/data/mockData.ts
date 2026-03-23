@@ -59,7 +59,7 @@ export interface Certificate {
   id: string;
   employeeId: string;
   companyId: string;
-  trainingTypeId: string;
+  trainingTypeIds: string[];
   trainingId: string;
   issueDate: string;
   expiryDate: string;

@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Employee, certificates, getCompanyName, getTrainingTypeName } from "@/data/mockData";
+import type { Employee } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 
 interface EmployeeCardProps {
   employee: Employee | null;
@@ -13,6 +14,8 @@ interface EmployeeCardProps {
 }
 
 export function EmployeeCard({ employee, open, onOpenChange, onEdit }: EmployeeCardProps) {
+  const { certificates, getCompanyName, getTrainingTypeName } = useData();
+
   if (!employee) return null;
 
   const employeeCerts = certificates.filter(c => c.employeeId === employee.id);
@@ -33,7 +36,6 @@ export function EmployeeCard({ employee, open, onOpenChange, onEdit }: EmployeeC
           </div>
         </DialogHeader>
 
-        {/* Employee Info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/50 rounded-lg p-4">
           <InfoRow icon={FileText} label="ת.ז" value={employee.idNumber} dir="ltr" />
           <InfoRow icon={User} label="שם האב" value={employee.fatherName} />
@@ -53,7 +55,6 @@ export function EmployeeCard({ employee, open, onOpenChange, onEdit }: EmployeeC
 
         <Separator />
 
-        {/* Certificates / Qualifications */}
         <div>
           <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <Award className="h-4 w-4 text-primary" />
@@ -64,7 +65,11 @@ export function EmployeeCard({ employee, open, onOpenChange, onEdit }: EmployeeC
               {employeeCerts.map(cert => (
                 <div key={cert.id} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg">
                   <div>
-                    <p className="font-medium text-sm">{getTrainingTypeName(cert.trainingTypeId)}</p>
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {cert.trainingTypeIds.map(id => (
+                        <Badge key={id} variant="secondary" className="text-xs">{getTrainingTypeName(id)}</Badge>
+                      ))}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       הונפקה: {cert.issueDate} • תפוגה: {cert.expiryDate}
                     </p>

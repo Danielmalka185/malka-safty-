@@ -25,7 +25,7 @@ const defaultData: Record<string, string> = {
   fatherName: 'אברהם',
 };
 
-const RUBIK_FONT_URL = 'https://fonts.gstatic.com/s/rubik/v28/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4iFWkU1Z4Y.ttf';
+const RUBIK_FONT_URL = 'https://fonts.gstatic.com/s/rubik/v28/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4i.ttf';
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
