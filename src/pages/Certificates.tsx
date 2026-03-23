@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import CertificatePreview from "@/components/CertificatePreview";
 import { useData } from "@/context/DataContext";
 import {
-  getEmployeeName, getEmployee, getTrainingTypeName, getCompanyName,
   getCategoryName, getTemplateForCategory,
   type Certificate,
 } from "@/data/mockData";
