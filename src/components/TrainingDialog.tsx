@@ -26,6 +26,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
   const [instructor, setInstructor] = useState('');
+  const [trainingKind, setTrainingKind] = useState<'new' | 'renewal'>('new');
   const [pricingType, setPricingType] = useState<'per_person' | 'global'>('per_person');
   const [basePrice, setBasePrice] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
