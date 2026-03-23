@@ -20,6 +20,11 @@ interface DataContextType {
   addTraining: (data: Omit<Training, 'id'>) => Training;
   updateTraining: (data: Training) => void;
   addCertificatesForTraining: (training: Training) => void;
+  getCompanyName: (id: string) => string;
+  getEmployeeName: (id: string) => string;
+  getEmployee: (id: string) => Employee | undefined;
+  getTrainingTypeName: (id: string) => string;
+  getCategoryName: (id: string) => string;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
