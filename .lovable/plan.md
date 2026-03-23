@@ -1,31 +1,31 @@
 
 
-# תיקון תעודות + הוספת עריכת הדרכה
+# תיקון עורך PDF — העלאה, תצוגה ומיקום שדות
 
-## הבעיה העיקרית — למה תעודות לא נוצרות
-פונקציות העזר (`getEmployeeName`, `getCompanyName`, וכו') ב-`mockData.ts` קוראות מהמערכים הסטטיים הריקים — לא מה-DataContext. לכן גם אם התעודות נוצרות, הן מציגות "לא ידוע" בכל מקום. צריך לתקן את זה.
+## הבעיה
+ה-worker של `pdfjs-dist` מוגדר כמחרוזת ריקה, מה שגורם לשגיאה ומונע טעינת PDF לחלוטין. בלי זה — אין תצוגה מקדימה, אין אפשרות למקם שדות, כלום לא עובד.
 
-## שינויים
+## מה ייעשה
 
-### 1. `src/data/mockData.ts` — הפיכת helper functions לקבלת נתונים מבחוץ
-הפונקציות `getCompanyName`, `getEmployeeName`, `getTrainingTypeName` וכו' ישארו כ-fallback, אבל נוסיף גרסאות שמקבלות את המערכים כפרמטר.
+### `src/components/PdfFieldEditor.tsx`
+- תיקון שורה 11: הגדרת ה-worker לעבוד ב-fake worker mode (ללא CDN חיצוני):
+  ```js
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+  ).toString();
+  ```
+- אם זה לא עובד עם גרסה 5, נעבור לגישת fallback: `import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url"` ונשתמש בזה
 
-### 2. `src/context/DataContext.tsx` — חשיפת helper functions שעובדות עם ה-state
-הוספת פונקציות עזר ל-context שמחפשות בתוך ה-state האמיתי:
-- `getCompanyName(id)` — מחפש ב-`companies` של ה-state
-- `getEmployeeName(id)` — מחפש ב-`employees` של ה-state
-- `getEmployee(id)`
-
-### 3. עדכון כל הדפים שמשתמשים ב-helpers
-`Trainings.tsx`, `Certificates.tsx`, `Index.tsx` — שימוש ב-helpers מה-context במקום מ-mockData
-
-### 4. `src/pages/Trainings.tsx` — כפתור עריכה
-בדיאלוג הצפייה בהדרכה, הוספת כפתור "עריכה" שפותח את `TrainingDialog` עם הנתונים הקיימים
+### מה יעבוד אחרי התיקון
+- העלאת קובץ PDF — מוצג על הקנבס
+- לחיצה על ה-PDF למיקום שדה חדש (שם עובד, ת"ז, תאריך וכו')
+- גרירת שדות למיקום מדויק
+- שינוי גודל פונט לכל שדה
+- מחיקת שדות
+- החלפת PDF
 
 | קובץ | שינוי |
 |---|---|
-| `src/context/DataContext.tsx` | הוספת helper functions שעובדות עם ה-state |
-| `src/pages/Trainings.tsx` | שימוש ב-helpers מ-context + כפתור עריכה בדיאלוג צפייה |
-| `src/pages/Certificates.tsx` | שימוש ב-helpers מ-context |
-| `src/pages/Index.tsx` | שימוש ב-helpers מ-context |
+| `src/components/PdfFieldEditor.tsx` | תיקון הגדרת workerSrc של pdfjs-dist |
 
