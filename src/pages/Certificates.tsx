@@ -21,8 +21,13 @@ const Certificates = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
 
+  const getTypeNames = (cert: Certificate): string => {
+    return cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join(', ');
+  };
+
   const filtered = certificates.filter(c => {
-    const matchesSearch = getEmployeeName(c.employeeId).includes(search) || getTrainingTypeName(c.trainingTypeId).includes(search) || getCompanyName(c.companyId).includes(search);
+    const typeNames = getTypeNames(c);
+    const matchesSearch = getEmployeeName(c.employeeId).includes(search) || typeNames.includes(search) || getCompanyName(c.companyId).includes(search);
     const matchesCompany = companyFilter === "all" || c.companyId === companyFilter;
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
     return matchesSearch && matchesCompany && matchesStatus;
@@ -32,11 +37,12 @@ const Certificates = () => {
     const emp = getEmployee(cert.employeeId);
     const training = trainings.find(t => t.id === cert.trainingId);
     const categoryId = training?.categoryId || '';
+    const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join('\n');
     return {
       employeeName: getEmployeeName(cert.employeeId),
       idNumber: emp?.idNumber || '',
       companyName: getCompanyName(cert.companyId),
-      trainingType: getTrainingTypeName(cert.trainingTypeId),
+      trainingType: typeNames,
       categoryName: getCategoryName(categoryId),
       date: cert.issueDate,
       expiryDate: cert.expiryDate,
@@ -95,7 +101,7 @@ const Certificates = () => {
               <TableRow>
                 <TableHead>עובד</TableHead>
                 <TableHead>חברה</TableHead>
-                <TableHead>סוג הדרכה</TableHead>
+                <TableHead>נושאי הדרכה</TableHead>
                 <TableHead className="hidden sm:table-cell">תאריך הנפקה</TableHead>
                 <TableHead>תאריך תפוגה</TableHead>
                 <TableHead>סטטוס</TableHead>
@@ -114,7 +120,13 @@ const Certificates = () => {
                     <TableCell>
                       <div className="flex items-center gap-2"><Building2 className="h-4 w-4 text-muted-foreground shrink-0" />{getCompanyName(cert.companyId)}</div>
                     </TableCell>
-                    <TableCell>{getTrainingTypeName(cert.trainingTypeId)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {cert.trainingTypeIds.map(id => (
+                          <Badge key={id} variant="secondary" className="text-xs">{getTrainingTypeName(id)}</Badge>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
                     <TableCell>{cert.expiryDate}</TableCell>
                     <TableCell><Badge variant={statusVariants[cert.status]}>{statusLabels[cert.status]}</Badge></TableCell>

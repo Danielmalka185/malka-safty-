@@ -34,12 +34,12 @@ const Dashboard = () => {
 
   const exportCsv = () => {
     const bom = '\uFEFF';
-    const header = 'שם עובד,חברה,סוג הדרכה,תאריך תפוגה\n';
+    const header = 'שם עובד,חברה,נושאי הדרכה,תאריך תפוגה\n';
     const rows = expiringCerts.map(cert => {
       const empName = getEmployeeName(cert.employeeId);
       const compName = getCompanyName(cert.companyId);
-      const typeName = getTrainingTypeName(cert.trainingTypeId);
-      return `"${empName}","${compName}","${typeName}","${cert.expiryDate}"`;
+      const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join(' | ');
+      return `"${empName}","${compName}","${typeNames}","${cert.expiryDate}"`;
     }).join('\n');
     const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -94,7 +94,11 @@ const Dashboard = () => {
                   <div key={cert.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="font-medium text-sm">{getEmployeeName(cert.employeeId)}</p>
-                      <p className="text-xs text-muted-foreground">{getTrainingTypeName(cert.trainingTypeId)}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {cert.trainingTypeIds.map(id => (
+                          <span key={id} className="text-xs text-muted-foreground">{getTrainingTypeName(id)}</span>
+                        ))}
+                      </div>
                     </div>
                     <Badge variant="outline" className="text-warning border-warning">{cert.expiryDate}</Badge>
                   </div>
