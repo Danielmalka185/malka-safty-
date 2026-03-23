@@ -1,9 +1,7 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
-import { PDFDocument, rgb } from "pdf-lib";
-import fontkit from "@pdf-lib/fontkit";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
@@ -13,6 +11,8 @@ interface CertificatePreviewProps {
 
 const defaultData: Record<string, string> = {
   employeeName: 'ישראל ישראלי',
+  lastName: 'ישראלי',
+  firstName: 'ישראל',
   idNumber: '300000000',
   companyName: 'חברה לדוגמה',
   trainingType: 'הדרכת בטיחות',
@@ -20,56 +20,20 @@ const defaultData: Record<string, string> = {
   date: '2025-01-01',
   expiryDate: '2026-01-01',
   instructor: 'מדריך לדוגמה',
+  instructorPhone: '050-0000000',
+  instructorId: '200000000',
   birthYear: '1990',
   profession: 'עובד כללי',
   fatherName: 'אברהם',
+  phone: '050-1234567',
+  address: 'תל אביב',
+  companyId: '51-1234567',
+  companyPhone: '03-1234567',
+  companyAddress: 'רחוב ראשי 1',
 };
-
-const RUBIK_FONT_URL = 'https://fonts.gstatic.com/s/rubik/v28/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4i.ttf';
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
-}
-
-let cachedFontBytes: ArrayBuffer | null = null;
-
-async function fetchRubikFont(): Promise<ArrayBuffer> {
-  if (cachedFontBytes) return cachedFontBytes;
-  const res = await fetch(RUBIK_FONT_URL);
-  cachedFontBytes = await res.arrayBuffer();
-  return cachedFontBytes;
-}
-
-async function generatePdfWithFields(
-  pdfBase64: string,
-  fields: CertificateTemplate['pdfFields'],
-  data: Record<string, string>
-): Promise<Uint8Array> {
-  const pdfBytes = Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0));
-  const pdfDoc = await PDFDocument.load(pdfBytes);
-  pdfDoc.registerFontkit(fontkit);
-
-  const fontBytes = await fetchRubikFont();
-  const font = await pdfDoc.embedFont(fontBytes);
-
-  const page = pdfDoc.getPages()[0];
-
-  for (const field of fields || []) {
-    const value = data[field.key] || '';
-    try {
-      page.drawText(value, {
-        x: field.x,
-        y: field.y,
-        size: field.fontSize,
-        font,
-        color: rgb(0, 0, 0),
-      });
-    } catch {
-      // Skip unsupported chars
-    }
-  }
-
-  return pdfDoc.save();
 }
 
 export async function downloadCertificatePdf(
@@ -77,23 +41,48 @@ export async function downloadCertificatePdf(
   data: Record<string, string>
 ) {
   const mergedData = { ...defaultData, ...data };
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
 
-  if (template.templateType === 'pdf' && template.pdfBase64) {
-    const bytes = await generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData);
-    const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `certificate-${mergedData.employeeName}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
+  if (template.templateType === 'image' && template.backgroundImage) {
+    // Image-based template
+    const bgUrl = template.backgroundImage.startsWith('data:')
+      ? template.backgroundImage
+      : template.backgroundImage;
+
+    const fieldsHtml = (template.imageFields || []).map(field => {
+      const value = mergedData[field.key] || '';
+      return `<div style="position:absolute;left:${field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;transform:translate(-50%,-50%);font-weight:600;">${value}</div>`;
+    }).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html dir="rtl">
+      <head>
+        <meta charset="utf-8" />
+        <title>תעודה</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Rubik', sans-serif; }
+          @page { size: A4 landscape; margin: 0; }
+          @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          .cert { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+          .cert img { width: 100%; height: 100%; object-fit: contain; }
+        </style>
+      </head>
+      <body>
+        <div class="cert">
+          <img src="${bgUrl}" />
+          ${fieldsHtml}
+        </div>
+      </body>
+      </html>
+    `);
   } else {
-    // HTML template — use print
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    
+    // HTML template
     const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
-    const bodyHtml = bodyLines.map(line => 
+    const bodyHtml = bodyLines.map(line =>
       `<p style="font-weight: ${line.includes(mergedData.employeeName) ? '700' : '400'}">${line}</p>`
     ).join('');
 
@@ -134,104 +123,102 @@ export async function downloadCertificatePdf(
       </body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
   }
+
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
 }
 
-const PdfPreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
-  const [pdfUrl, setPdfUrl] = useState<string>('');
+const ImagePreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
   const mergedData = { ...defaultData, ...data };
-
-  useEffect(() => {
-    if (!template.pdfBase64) return;
-    
-    generatePdfWithFields(template.pdfBase64, template.pdfFields, mergedData).then(bytes => {
-      const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      setPdfUrl(url);
-      return () => URL.revokeObjectURL(url);
-    });
-  }, [template.pdfBase64, template.pdfFields, data]);
-
-  const handleDownload = () => downloadCertificatePdf(template, data || {});
-
-  if (!template.pdfBase64) {
-    return <p className="text-center text-muted-foreground py-8">לא הועלה PDF לתבנית זו</p>;
-  }
+  const bgUrl = template.backgroundImage || '';
 
   return (
-    <div className="space-y-3">
-      {pdfUrl && (
-        <iframe src={pdfUrl} className="w-full border rounded-lg" style={{ height: 500 }} />
-      )}
-      <div className="flex justify-center">
-        <Button onClick={handleDownload} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          הורד PDF
-        </Button>
+    <div className="relative w-full" style={{ aspectRatio: '1.414 / 1' }}>
+      <img src={bgUrl} alt="תבנית תעודה" className="w-full h-full object-contain rounded-lg" />
+      {(template.imageFields || []).map((field, i) => (
+        <div
+          key={i}
+          className="absolute font-semibold whitespace-pre-line text-center"
+          style={{
+            left: `${field.xPercent}%`,
+            top: `${field.yPercent}%`,
+            fontSize: `${field.fontSize * 0.7}px`,
+            color: field.color,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {mergedData[field.key] || field.label}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const HtmlPreview = ({ template, data }: CertificatePreviewProps) => {
+  const printRef = useRef<HTMLDivElement>(null);
+  const mergedData = { ...defaultData, ...data };
+  const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
+
+  return (
+    <div ref={printRef}>
+      <div
+        style={{
+          width: '100%',
+          maxWidth: 800,
+          aspectRatio: '1.414 / 1',
+          margin: '0 auto',
+          backgroundColor: template.backgroundColor,
+          border: template.showBorder ? `4px solid ${template.borderColor}` : 'none',
+          padding: '40px 50px',
+          fontFamily: `'${template.fontFamily}', sans-serif`,
+          color: template.textColor,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          textAlign: 'center',
+          position: 'relative',
+        }}
+      >
+        {template.showBorder && (
+          <div style={{ position: 'absolute', inset: 8, border: `1px solid ${template.borderColor}40`, pointerEvents: 'none' }} />
+        )}
+        <div style={{ fontSize: 14, fontWeight: 600, color: template.borderColor, letterSpacing: 2 }}>
+          {template.logoText}
+        </div>
+        <h1 style={{ fontSize: 32, fontWeight: 700, color: template.titleColor, marginTop: 16 }}>
+          {replacePlaceholders(template.title, mergedData)}
+        </h1>
+        <div style={{ fontSize: 16, lineHeight: 2, marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {bodyLines.map((line, i) => (
+            <p key={i} style={{ fontWeight: line.includes(mergedData.employeeName) ? 700 : 400 }}>
+              {line}
+            </p>
+          ))}
+        </div>
+        <div style={{ marginTop: 24, borderTop: `1px solid ${template.textColor}40`, paddingTop: 8, fontSize: 14 }}>
+          {template.signatureText}
+        </div>
       </div>
     </div>
   );
 };
 
-const HtmlPreview = ({ template, data, showPrintButton }: CertificatePreviewProps) => {
-  const printRef = useRef<HTMLDivElement>(null);
-  const mergedData = { ...defaultData, ...data };
-  const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
+const CertificatePreview = (props: CertificatePreviewProps) => {
+  const mergedData = { ...defaultData, ...props.data };
 
-  const handlePrint = () => downloadCertificatePdf(template, data || {});
+  const handlePrint = () => downloadCertificatePdf(props.template, props.data || {});
 
   return (
     <div className="space-y-3">
-      <div ref={printRef}>
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 800,
-            aspectRatio: '1.414 / 1',
-            margin: '0 auto',
-            backgroundColor: template.backgroundColor,
-            border: template.showBorder ? `4px solid ${template.borderColor}` : 'none',
-            padding: '40px 50px',
-            fontFamily: `'${template.fontFamily}', sans-serif`,
-            color: template.textColor,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            textAlign: 'center',
-            position: 'relative',
-          }}
-        >
-          {template.showBorder && (
-            <div style={{
-              position: 'absolute',
-              inset: 8,
-              border: `1px solid ${template.borderColor}40`,
-              pointerEvents: 'none',
-            }} />
-          )}
-          <div style={{ fontSize: 14, fontWeight: 600, color: template.borderColor, letterSpacing: 2 }}>
-            {template.logoText}
-          </div>
-          <h1 style={{ fontSize: 32, fontWeight: 700, color: template.titleColor, marginTop: 16 }}>
-            {replacePlaceholders(template.title, mergedData)}
-          </h1>
-          <div style={{ fontSize: 16, lineHeight: 2, marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            {bodyLines.map((line, i) => (
-              <p key={i} style={{ fontWeight: line.includes(mergedData.employeeName) ? 700 : 400 }}>
-                {line}
-              </p>
-            ))}
-          </div>
-          <div style={{ marginTop: 24, borderTop: `1px solid ${template.textColor}40`, paddingTop: 8, fontSize: 14 }}>
-            {template.signatureText}
-          </div>
-        </div>
-      </div>
-      {showPrintButton && (
+      {props.template.templateType === 'image' ? (
+        <ImagePreview template={props.template} data={mergedData} />
+      ) : (
+        <HtmlPreview {...props} />
+      )}
+      {props.showPrintButton && (
         <div className="flex justify-center">
           <Button onClick={handlePrint} variant="outline" className="gap-2">
             <Printer className="h-4 w-4" />
@@ -241,13 +228,6 @@ const HtmlPreview = ({ template, data, showPrintButton }: CertificatePreviewProp
       )}
     </div>
   );
-};
-
-const CertificatePreview = (props: CertificatePreviewProps) => {
-  if (props.template.templateType === 'pdf') {
-    return <PdfPreview template={props.template} data={{ ...defaultData, ...props.data }} />;
-  }
-  return <HtmlPreview {...props} />;
 };
 
 export default CertificatePreview;

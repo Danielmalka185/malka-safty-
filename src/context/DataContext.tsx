@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
-  Company, Employee, Training, Certificate, CertificateTemplate,
+  Company, Employee, Training, Certificate, CertificateTemplate, Instructor,
   companies as initCompanies,
   employees as initEmployees,
   trainings as initTrainings,
   certificates as initCertificates,
   certificateTemplates as initTemplates,
+  instructors as initInstructors,
   trainingTypes,
   trainingCategories,
 } from "@/data/mockData";
@@ -16,6 +17,7 @@ interface DataContextType {
   trainings: Training[];
   certificates: Certificate[];
   templates: CertificateTemplate[];
+  instructors: Instructor[];
   addCompany: (data: Omit<Company, 'id'>) => Company;
   updateCompany: (data: Company) => void;
   addEmployee: (data: Omit<Employee, 'id'>) => Employee;
@@ -31,9 +33,11 @@ interface DataContextType {
   getEmployee: (id: string) => Employee | undefined;
   getTrainingTypeName: (id: string) => string;
   getCategoryName: (id: string) => string;
+  addInstructor: (data: Omit<Instructor, 'id'>) => Instructor;
+  updateInstructor: (data: Instructor) => void;
+  deleteInstructor: (id: string) => void;
 }
 
-// Context singleton
 const DataContext = createContext<DataContextType | null>(null);
 
 export function useData(): DataContextType {
@@ -48,6 +52,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [trainings, setTrainings] = useState<Training[]>([...initTrainings]);
   const [certificates, setCertificates] = useState<Certificate[]>([...initCertificates]);
   const [templates, setTemplates] = useState<CertificateTemplate[]>([...initTemplates]);
+  const [instructors, setInstructors] = useState<Instructor[]>([...initInstructors]);
 
   const addCompany = useCallback((data: Omit<Company, 'id'>): Company => {
     const newCompany: Company = { ...data, id: `c${Date.now()}` };
@@ -79,18 +84,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setTrainings(prev => prev.map(t => t.id === data.id ? data : t));
   }, []);
 
-  // One certificate per participant with ALL training type IDs
-  // Expiry based on the FIRST (shortest validity) training type
   const addCertificatesForTraining = useCallback((training: Training) => {
-    // Filter to only types that require certificates
     const certTypeIds = training.trainingTypeIds.filter(typeId => {
       const tt = trainingTypes.find(t => t.id === typeId);
       return tt?.requiresCertificate;
     });
-
     if (certTypeIds.length === 0) return;
 
-    // Find the shortest validity for expiry calculation
     const shortestValidity = certTypeIds.reduce((min, typeId) => {
       const tt = trainingTypes.find(t => t.id === typeId);
       return tt ? Math.min(min, tt.validityMonths) : min;
@@ -158,9 +158,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return trainingCategories.find(c => c.id === id)?.name || 'לא ידוע';
   }, []);
 
+  const addInstructor = useCallback((data: Omit<Instructor, 'id'>): Instructor => {
+    const newInstructor: Instructor = { ...data, id: `inst-${Date.now()}` };
+    setInstructors(prev => [...prev, newInstructor]);
+    return newInstructor;
+  }, []);
+
+  const updateInstructor = useCallback((data: Instructor) => {
+    setInstructors(prev => prev.map(i => i.id === data.id ? data : i));
+  }, []);
+
+  const deleteInstructor = useCallback((id: string) => {
+    setInstructors(prev => prev.filter(i => i.id !== id));
+  }, []);
+
   return (
     <DataContext.Provider value={{
-      companies, employees, trainings, certificates, templates,
+      companies, employees, trainings, certificates, templates, instructors,
       addCompany, updateCompany,
       addEmployee, updateEmployee,
       addTraining, updateTraining,
@@ -169,6 +183,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       getCompanyName, getEmployeeName,
       getEmployee: getEmployeeById,
       getTrainingTypeName, getCategoryName,
+      addInstructor, updateInstructor, deleteInstructor,
     }}>
       {children}
     </DataContext.Provider>

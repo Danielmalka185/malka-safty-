@@ -8,15 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, FileText, FileUp } from "lucide-react";
+import { Save, FileText, Image } from "lucide-react";
 import CertificatePreview from "@/components/CertificatePreview";
-import PdfFieldEditor from "@/components/PdfFieldEditor";
+import ImageFieldEditor from "@/components/ImageFieldEditor";
 import { useData } from "@/context/DataContext";
-import {
-  trainingCategories,
-  type CertificateTemplate,
-  type PdfField,
-} from "@/data/mockData";
+import { trainingCategories, type CertificateTemplate, type ImageField } from "@/data/mockData";
 import { toast } from "sonner";
 
 const placeholders = [
@@ -96,15 +92,15 @@ const CertificateTemplateEditor = () => {
             <CardTitle className="text-lg">סוג תבנית</CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs value={form.templateType} onValueChange={(v) => updateField('templateType', v as 'html' | 'pdf')}>
+            <Tabs value={form.templateType} onValueChange={(v) => updateField('templateType', v as 'html' | 'image')}>
               <TabsList className="w-full">
                 <TabsTrigger value="html" className="flex-1 gap-2">
                   <FileText className="h-4 w-4" />
                   עיצוב HTML
                 </TabsTrigger>
-                <TabsTrigger value="pdf" className="flex-1 gap-2">
-                  <FileUp className="h-4 w-4" />
-                  העלאת PDF
+                <TabsTrigger value="image" className="flex-1 gap-2">
+                  <Image className="h-4 w-4" />
+                  תמונת רקע
                 </TabsTrigger>
               </TabsList>
 
@@ -140,12 +136,12 @@ const CertificateTemplateEditor = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="pdf" className="mt-4">
-                <PdfFieldEditor
-                  pdfBase64={form.pdfBase64 || ''}
-                  fields={form.pdfFields || []}
-                  onFieldsChange={(fields: PdfField[]) => updateField('pdfFields', fields)}
-                  onPdfUpload={(base64: string) => updateField('pdfBase64', base64)}
+              <TabsContent value="image" className="mt-4">
+                <ImageFieldEditor
+                  backgroundImage={form.backgroundImage || ''}
+                  fields={form.imageFields || []}
+                  onFieldsChange={(fields: ImageField[]) => updateField('imageFields', fields)}
+                  onImageUpload={(dataUrl: string) => updateField('backgroundImage', dataUrl)}
                 />
               </TabsContent>
             </Tabs>
