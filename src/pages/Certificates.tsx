@@ -38,10 +38,16 @@ const Certificates = () => {
     const training = trainings.find(t => t.id === cert.trainingId);
     const categoryId = training?.categoryId || '';
     const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join('\n');
+    const company = companies.find(c => c.id === cert.companyId);
     return {
       employeeName: getEmployeeName(cert.employeeId),
+      firstName: emp?.firstName || '',
+      lastName: emp?.lastName || '',
       idNumber: emp?.idNumber || '',
       companyName: getCompanyName(cert.companyId),
+      companyId: company?.registrationNumber || '',
+      companyPhone: company?.phone || company?.officePhone || '',
+      companyAddress: company?.address || '',
       trainingType: typeNames,
       categoryName: getCategoryName(categoryId),
       date: cert.issueDate,
@@ -50,6 +56,8 @@ const Certificates = () => {
       birthYear: emp?.birthYear?.toString() || '',
       fatherName: emp?.fatherName || '',
       profession: emp?.profession || '',
+      phone: emp?.phone || '',
+      address: emp?.address || '',
     };
   };
 

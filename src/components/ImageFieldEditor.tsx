@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -49,8 +49,22 @@ interface ImageFieldEditorProps {
 
 const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUpload }: ImageFieldEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [dragging, setDragging] = useState<{ idx: number; startX: number; startY: number; fieldX: number; fieldY: number } | null>(null);
   const [addingField, setAddingField] = useState<string>("");
+  const [imgNaturalRatio, setImgNaturalRatio] = useState<number | null>(null);
+
+  const handleImageLoad = () => {
+    if (imgRef.current) {
+      setImgNaturalRatio(imgRef.current.naturalWidth / imgRef.current.naturalHeight);
+    }
+  };
+
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth) {
+      setImgNaturalRatio(imgRef.current.naturalWidth / imgRef.current.naturalHeight);
+    }
+  }, [backgroundImage]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -149,16 +163,33 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
         </label>
       </div>
 
-      {/* Image with overlay fields */}
+      {/* Image with overlay fields — uses natural image aspect ratio */}
       <div
         ref={containerRef}
         className="relative border rounded-lg overflow-hidden cursor-crosshair select-none"
+        style={imgNaturalRatio ? { aspectRatio: `${imgNaturalRatio}` } : undefined}
         onClick={handleContainerClick}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        <img src={backgroundImage} alt="תבנית" className="block w-full" draggable={false} />
+        <img
+          ref={imgRef}
+          src={backgroundImage}
+          alt="תבנית"
+          className="absolute inset-0 w-full h-full object-fill"
+          draggable={false}
+          onLoad={handleImageLoad}
+        />
+        {/* Grid lines for positioning help */}
+        <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.15 }}>
+          {[25, 50, 75].map(p => (
+            <div key={`v${p}`} className="absolute top-0 bottom-0 border-l border-dashed border-primary" style={{ left: `${p}%` }} />
+          ))}
+          {[25, 50, 75].map(p => (
+            <div key={`h${p}`} className="absolute left-0 right-0 border-t border-dashed border-primary" style={{ top: `${p}%` }} />
+          ))}
+        </div>
         {fields.map((field, idx) => (
           <div
             key={idx}

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
@@ -45,14 +45,13 @@ export async function downloadCertificatePdf(
   if (!printWindow) return;
 
   if (template.templateType === 'image' && template.backgroundImage) {
-    // Image-based template
     const bgUrl = template.backgroundImage.startsWith('data:')
       ? template.backgroundImage
       : template.backgroundImage;
 
     const fieldsHtml = (template.imageFields || []).map(field => {
       const value = mergedData[field.key] || '';
-      return `<div style="position:absolute;left:${field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;transform:translate(-50%,-50%);font-weight:600;">${value}</div>`;
+      return `<div style="position:absolute;left:${field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;transform:translate(-50%,-50%);font-weight:600;font-family:'Rubik',sans-serif;">${value}</div>`;
     }).join('');
 
     printWindow.document.write(`
@@ -68,7 +67,7 @@ export async function downloadCertificatePdf(
           @page { size: A4 landscape; margin: 0; }
           @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
           .cert { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-          .cert img { width: 100%; height: 100%; object-fit: contain; }
+          .cert img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
         </style>
       </head>
       <body>
@@ -80,7 +79,6 @@ export async function downloadCertificatePdf(
       </html>
     `);
   } else {
-    // HTML template
     const bodyLines = replacePlaceholders(template.bodyText, mergedData).split('\n');
     const bodyHtml = bodyLines.map(line =>
       `<p style="font-weight: ${line.includes(mergedData.employeeName) ? '700' : '400'}">${line}</p>`
@@ -133,10 +131,30 @@ export async function downloadCertificatePdf(
 const ImagePreview = ({ template, data }: { template: CertificateTemplate; data: Record<string, string> }) => {
   const mergedData = { ...defaultData, ...data };
   const bgUrl = template.backgroundImage || '';
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [ratio, setRatio] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth) {
+      setRatio(imgRef.current.naturalWidth / imgRef.current.naturalHeight);
+    }
+  }, [bgUrl]);
+
+  const handleLoad = () => {
+    if (imgRef.current) {
+      setRatio(imgRef.current.naturalWidth / imgRef.current.naturalHeight);
+    }
+  };
 
   return (
-    <div className="relative w-full" style={{ aspectRatio: '1.414 / 1' }}>
-      <img src={bgUrl} alt="תבנית תעודה" className="w-full h-full object-contain rounded-lg" />
+    <div className="relative w-full" style={ratio ? { aspectRatio: `${ratio}` } : { aspectRatio: '1.414 / 1' }}>
+      <img
+        ref={imgRef}
+        src={bgUrl}
+        alt="תבנית תעודה"
+        className="absolute inset-0 w-full h-full object-fill rounded-lg"
+        onLoad={handleLoad}
+      />
       {(template.imageFields || []).map((field, i) => (
         <div
           key={i}
