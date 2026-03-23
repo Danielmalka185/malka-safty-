@@ -13,7 +13,7 @@ import {
 } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
-import { Pencil } from "lucide-react";
+
 
 const Trainings = () => {
   const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining, getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName } = useData();
