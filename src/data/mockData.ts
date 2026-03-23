@@ -164,6 +164,7 @@ export let certificateTemplates: CertificateTemplate[] = [
   },
   {
     id: 'tmpl-cat1',
+    name: 'תבנית עבודה בגובה',
     categoryId: 'cat1',
     templateType: 'html',
     title: 'תעודת הסמכה — עבודה בגובה',
