@@ -154,7 +154,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
             {availableFields.map(group => (
               <div key={group.group}>
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{group.group}</div>
-                {group.fields.filter(f => !usedKeys.has(f.key)).map(f => (
+                {group.fields.map(f => (
                   <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
                 ))}
               </div>

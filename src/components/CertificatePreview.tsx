@@ -178,7 +178,7 @@ const ImagePreview = ({ template, data }: { template: CertificateTemplate; data:
             transform: 'translate(-50%, -50%)',
           }}
         >
-          {mergedData[field.key] || field.label}
+          {resolveFieldValue(field.key, mergedData) || field.label}
         </div>
       ))}
     </div>
