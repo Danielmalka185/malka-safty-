@@ -5,13 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { companies, employees, trainings, certificates, getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
+import { getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } from "@/data/mockData";
 
 const Dashboard = () => {
+  const { companies, employees, trainings, certificates } = useData();
   const [monthsRange, setMonthsRange] = useState("3");
 
   const activeEmployees = employees.filter(e => e.status === 'active').length;
-  const thisMonthTrainings = trainings.filter(t => t.date.startsWith('2025-03')).length;
+  const thisMonthTrainings = trainings.filter(t => {
+    const now = new Date();
+    const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return t.date.startsWith(prefix);
+  }).length;
   const expiredCerts = certificates.filter(c => c.status === 'expired').length;
 
   const now = new Date();
@@ -91,9 +97,7 @@ const Dashboard = () => {
                       <p className="font-medium text-sm">{getEmployeeName(cert.employeeId)}</p>
                       <p className="text-xs text-muted-foreground">{getTrainingTypeName(cert.trainingTypeId)}</p>
                     </div>
-                    <Badge variant="outline" className="text-warning border-warning">
-                      {cert.expiryDate}
-                    </Badge>
+                    <Badge variant="outline" className="text-warning border-warning">{cert.expiryDate}</Badge>
                   </div>
                 ))}
                 {expiringCerts.length > 5 && (
@@ -129,6 +133,9 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {trainings.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-6">אין הדרכות עדיין</p>
+              )}
             </div>
           </CardContent>
         </Card>

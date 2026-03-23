@@ -20,23 +20,25 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/companies" element={<Companies />} />
-            <Route path="/employees" element={<Employees />} />
-            <Route path="/training-types" element={<TrainingTypes />} />
-            <Route path="/trainings" element={<Trainings />} />
-            <Route path="/certificates" element={<Certificates />} />
-            <Route path="/risk-surveys" element={<RiskSurveys />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <DataProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/employees" element={<Employees />} />
+              <Route path="/training-types" element={<TrainingTypes />} />
+              <Route path="/trainings" element={<Trainings />} />
+              <Route path="/certificates" element={<Certificates />} />
+              <Route path="/risk-surveys" element={<RiskSurveys />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </DataProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
