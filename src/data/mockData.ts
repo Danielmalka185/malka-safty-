@@ -76,6 +76,7 @@ export interface PdfField {
 
 export interface CertificateTemplate {
   id: string;
+  name: string;
   categoryId: string;
   templateType: 'html' | 'pdf';
   title: string;
