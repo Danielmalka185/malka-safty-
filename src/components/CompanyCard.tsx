@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Company, employees, trainings, riskSurveys, getCategoryName } from "@/data/mockData";
+import { Company, riskSurveys } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 
 interface CompanyCardProps {
   company: Company | null;
@@ -14,6 +15,8 @@ interface CompanyCardProps {
 }
 
 export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCardProps) {
+  const { employees, trainings, getCategoryName } = useData();
+
   if (!company) return null;
 
   const companyEmployees = employees.filter(e => e.companyId === company.id);
