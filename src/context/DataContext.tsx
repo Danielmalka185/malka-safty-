@@ -6,6 +6,7 @@ import {
   trainings as initTrainings,
   certificates as initCertificates,
   trainingTypes,
+  trainingCategories,
 } from "@/data/mockData";
 
 interface DataContextType {
