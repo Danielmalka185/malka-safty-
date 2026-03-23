@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { companies, employees, trainingCategories, trainingTypes, calculateFinalPrice, type Training } from "@/data/mockData";
+import { trainingCategories, trainingTypes, calculateFinalPrice, type Training } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 
 interface TrainingDialogProps {
   open: boolean;
@@ -17,6 +18,7 @@ interface TrainingDialogProps {
 }
 
 const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialogProps) => {
+  const { companies, employees } = useData();
   const [companyId, setCompanyId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
@@ -30,119 +32,63 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
 
   useEffect(() => {
     if (training) {
-      setCompanyId(training.companyId);
-      setCategoryId(training.categoryId);
-      setSelectedTypeIds(training.trainingTypeIds);
-      setSelectedParticipantIds(training.participantIds);
-      setDate(training.date);
-      setLocation(training.location);
-      setInstructor(training.instructor);
-      setPricingType(training.pricingType);
-      setBasePrice(training.basePrice);
-      setDiscountPercent(training.discountPercent);
+      setCompanyId(training.companyId); setCategoryId(training.categoryId);
+      setSelectedTypeIds(training.trainingTypeIds); setSelectedParticipantIds(training.participantIds);
+      setDate(training.date); setLocation(training.location); setInstructor(training.instructor);
+      setPricingType(training.pricingType); setBasePrice(training.basePrice); setDiscountPercent(training.discountPercent);
     } else {
-      setCompanyId('');
-      setCategoryId('');
-      setSelectedTypeIds([]);
-      setSelectedParticipantIds([]);
-      setDate('');
-      setLocation('');
-      setInstructor('');
-      setPricingType('per_person');
-      setBasePrice(0);
-      setDiscountPercent(0);
+      setCompanyId(''); setCategoryId(''); setSelectedTypeIds([]); setSelectedParticipantIds([]);
+      setDate(''); setLocation(''); setInstructor('');
+      setPricingType('per_person'); setBasePrice(0); setDiscountPercent(0);
     }
   }, [training, open]);
 
-  const categorySubTopics = useMemo(
-    () => trainingTypes.filter(t => t.categoryId === categoryId),
-    [categoryId]
-  );
-
-  const companyEmployees = useMemo(
-    () => employees.filter(e => e.companyId === companyId && e.status === 'active'),
-    [companyId]
-  );
+  const categorySubTopics = useMemo(() => trainingTypes.filter(t => t.categoryId === categoryId), [categoryId]);
+  const companyEmployees = useMemo(() => employees.filter(e => e.companyId === companyId && e.status === 'active'), [companyId, employees]);
 
   const finalPrice = useMemo(() => {
     const mockTraining = { pricingType, basePrice, discountPercent, participantIds: selectedParticipantIds } as Training;
     return calculateFinalPrice(mockTraining);
   }, [pricingType, basePrice, discountPercent, selectedParticipantIds]);
 
-  const toggleType = (id: string) => {
-    setSelectedTypeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
-  const toggleParticipant = (id: string) => {
-    setSelectedParticipantIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
-  const selectAllParticipants = () => {
-    setSelectedParticipantIds(companyEmployees.map(e => e.id));
-  };
+  const toggleType = (id: string) => setSelectedTypeIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const toggleParticipant = (id: string) => setSelectedParticipantIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const selectAllParticipants = () => setSelectedParticipantIds(companyEmployees.map(e => e.id));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId || !categoryId || selectedTypeIds.length === 0 || selectedParticipantIds.length === 0 || !date) return;
-    onSave({
-      id: training?.id,
-      companyId,
-      categoryId,
-      trainingTypeIds: selectedTypeIds,
-      date,
-      location,
-      instructor,
-      participantIds: selectedParticipantIds,
-      pricingType,
-      basePrice,
-      discountPercent,
-    });
+    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
     onOpenChange(false);
   };
 
-  const handleCompanyChange = (val: string) => {
-    setCompanyId(val);
-    setSelectedParticipantIds([]);
-  };
-
-  const handleCategoryChange = (val: string) => {
-    setCategoryId(val);
-    setSelectedTypeIds([]);
-  };
-
+  const handleCompanyChange = (val: string) => { setCompanyId(val); setSelectedParticipantIds([]); };
+  const handleCategoryChange = (val: string) => { setCategoryId(val); setSelectedTypeIds([]); };
   const isValid = companyId && categoryId && selectedTypeIds.length > 0 && selectedParticipantIds.length > 0 && date;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
-        <DialogHeader>
-          <DialogTitle>{training ? 'עריכת הדרכה' : 'הדרכה חדשה'}</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>{training ? 'עריכת הדרכה' : 'הדרכה חדשה'}</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label>חברה *</Label>
             <Select value={companyId} onValueChange={handleCompanyChange}>
               <SelectTrigger><SelectValue placeholder="בחר חברה" /></SelectTrigger>
               <SelectContent>
-                {companies.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
+                {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
             <Label>קטגוריית הדרכה *</Label>
             <Select value={categoryId} onValueChange={handleCategoryChange}>
               <SelectTrigger><SelectValue placeholder="בחר קטגוריה" /></SelectTrigger>
               <SelectContent>
-                {trainingCategories.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
+                {trainingCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-
           {categoryId && categorySubTopics.length > 0 && (
             <div className="space-y-2">
               <Label>נושאים *</Label>
@@ -157,7 +103,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
               </div>
             </div>
           )}
-
           {companyId && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -181,7 +126,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
               )}
             </div>
           )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="t-date">תאריך *</Label>
@@ -196,8 +140,6 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
             <Label htmlFor="t-location">מיקום</Label>
             <Input id="t-location" value={location} onChange={e => setLocation(e.target.value)} placeholder="מיקום ההדרכה" />
           </div>
-
-          {/* Pricing Section */}
           <div className="border-t pt-4 space-y-4">
             <Label className="text-base font-semibold">תמחור</Label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -226,20 +168,15 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
                 <div className="h-10 flex items-center px-3 rounded-md border bg-muted/50 text-sm font-semibold">
                   ₪{finalPrice.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   {pricingType === 'per_person' && selectedParticipantIds.length > 0 && (
-                    <span className="text-muted-foreground font-normal mr-2">
-                      ({selectedParticipantIds.length} × ₪{basePrice})
-                    </span>
+                    <span className="text-muted-foreground font-normal mr-2">({selectedParticipantIds.length} × ₪{basePrice})</span>
                   )}
                 </div>
               </div>
             </div>
           </div>
-
           <DialogFooter className="gap-2 sm:gap-0">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>ביטול</Button>
-            <Button type="submit" disabled={!isValid}>
-              {training ? 'שמור שינויים' : 'צור הדרכה'}
-            </Button>
+            <Button type="submit" disabled={!isValid}>{training ? 'שמור שינויים' : 'צור הדרכה'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

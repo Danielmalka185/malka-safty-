@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Employee, companies } from "@/data/mockData";
+import { Employee } from "@/data/mockData";
+import { useData } from "@/context/DataContext";
 
 interface EmployeeDialogProps {
   open: boolean;
@@ -14,32 +15,21 @@ interface EmployeeDialogProps {
 }
 
 export function EmployeeDialog({ open, onOpenChange, employee, onSave }: EmployeeDialogProps) {
+  const { companies } = useData();
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    fatherName: '',
-    idNumber: '',
-    birthYear: '',
-    profession: '',
-    address: '',
-    phone: '',
-    companyId: '',
-    status: 'active' as 'active' | 'inactive',
+    firstName: '', lastName: '', fatherName: '', idNumber: '',
+    birthYear: '', profession: '', address: '', phone: '',
+    companyId: '', status: 'active' as 'active' | 'inactive',
   });
 
   useEffect(() => {
     if (employee) {
       setForm({
-        firstName: employee.firstName,
-        lastName: employee.lastName,
-        fatherName: employee.fatherName,
-        idNumber: employee.idNumber,
-        birthYear: String(employee.birthYear),
-        profession: employee.profession,
-        address: employee.address,
-        phone: employee.phone,
-        companyId: employee.companyId,
-        status: employee.status,
+        firstName: employee.firstName, lastName: employee.lastName,
+        fatherName: employee.fatherName, idNumber: employee.idNumber,
+        birthYear: String(employee.birthYear), profession: employee.profession,
+        address: employee.address, phone: employee.phone,
+        companyId: employee.companyId, status: employee.status,
       });
     } else {
       setForm({ firstName: '', lastName: '', fatherName: '', idNumber: '', birthYear: '', profession: '', address: '', phone: '', companyId: '', status: 'active' });
@@ -48,11 +38,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      ...form,
-      birthYear: Number(form.birthYear),
-      ...(employee ? { id: employee.id } : {}),
-    });
+    onSave({ ...form, birthYear: Number(form.birthYear), ...(employee ? { id: employee.id } : {}) });
     onOpenChange(false);
   };
 
@@ -97,9 +83,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
             <div className="space-y-2">
               <Label htmlFor="status">סטטוס</Label>
               <Select value={form.status} onValueChange={(v) => update('status', v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">פעיל</SelectItem>
                   <SelectItem value="inactive">לא פעיל</SelectItem>
@@ -114,9 +98,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
           <div className="space-y-2">
             <Label htmlFor="companyId">חברה משויכת *</Label>
             <Select value={form.companyId} onValueChange={(v) => update('companyId', v)} required>
-              <SelectTrigger>
-                <SelectValue placeholder="בחר חברה..." />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="בחר חברה..." /></SelectTrigger>
               <SelectContent>
                 {companies.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
