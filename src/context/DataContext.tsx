@@ -33,6 +33,7 @@ interface DataContextType {
   getCategoryName: (id: string) => string;
 }
 
+// Context singleton
 const DataContext = createContext<DataContextType | null>(null);
 
 export function useData(): DataContextType {
