@@ -36,6 +36,13 @@ function replacePlaceholders(text: string, data: Record<string, string>): string
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
+// Resolve field key to data value — supports duplicate keys like "date_2" → data["date"]
+function resolveFieldValue(key: string, data: Record<string, string>): string {
+  if (data[key]) return data[key];
+  const baseKey = key.replace(/_\d+$/, '');
+  return data[baseKey] || '';
+}
+
 export async function downloadCertificatePdf(
   template: CertificateTemplate,
   data: Record<string, string>
@@ -50,7 +57,7 @@ export async function downloadCertificatePdf(
       : template.backgroundImage;
 
     const fieldsHtml = (template.imageFields || []).map(field => {
-      const value = mergedData[field.key] || '';
+      const value = resolveFieldValue(field.key, mergedData);
       return `<div style="position:absolute;left:${field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;transform:translate(-50%,-50%);font-weight:600;font-family:'Rubik',sans-serif;">${value}</div>`;
     }).join('');
 
@@ -171,7 +178,7 @@ const ImagePreview = ({ template, data }: { template: CertificateTemplate; data:
             transform: 'translate(-50%, -50%)',
           }}
         >
-          {mergedData[field.key] || field.label}
+          {resolveFieldValue(field.key, mergedData) || field.label}
         </div>
       ))}
     </div>

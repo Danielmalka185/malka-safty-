@@ -33,12 +33,18 @@ const availableFields = [
   { group: 'הדרכה', fields: [
     { key: 'trainingType', label: 'נושאי הדרכה' },
     { key: 'categoryName', label: 'קטגוריה' },
+    { key: 'trainingKind', label: 'חדש/ריענון' },
     { key: 'date', label: 'תאריך' },
     { key: 'expiryDate', label: 'תאריך תפוגה' },
   ]},
 ];
 
 const allFields = availableFields.flatMap(g => g.fields);
+
+// Get base key without numeric suffix (e.g., "date_2" → "date")
+function getBaseKey(key: string): string {
+  return key.replace(/_\d+$/, '');
+}
 
 interface ImageFieldEditorProps {
   backgroundImage: string;
@@ -80,10 +86,16 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
     const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
 
-    const fieldInfo = allFields.find(f => f.key === addingField);
+    const baseKey = getBaseKey(addingField);
+    const fieldInfo = allFields.find(f => f.key === baseKey);
     if (!fieldInfo) return;
 
-    onFieldsChange([...fields, { key: addingField, label: fieldInfo.label, xPercent, yPercent, fontSize: 14, color: '#000000' }]);
+    // Generate unique key with suffix if duplicate
+    const existingCount = fields.filter(f => getBaseKey(f.key) === baseKey).length;
+    const fieldKey = existingCount > 0 ? `${baseKey}_${existingCount + 1}` : baseKey;
+    const label = existingCount > 0 ? `${fieldInfo.label} (${existingCount + 1})` : fieldInfo.label;
+
+    onFieldsChange([...fields, { key: fieldKey, label, xPercent, yPercent, fontSize: 14, color: '#000000' }]);
     setAddingField("");
   };
 
@@ -112,7 +124,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     onFieldsChange(updated);
   };
 
-  const usedKeys = new Set(fields.map(f => f.key));
+  // No longer filter out used keys — allow duplicates
 
   if (!backgroundImage) {
     return (
@@ -142,7 +154,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
             {availableFields.map(group => (
               <div key={group.group}>
                 <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{group.group}</div>
-                {group.fields.filter(f => !usedKeys.has(f.key)).map(f => (
+                {group.fields.map(f => (
                   <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
                 ))}
               </div>

@@ -26,6 +26,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const [date, setDate] = useState('');
   const [location, setLocation] = useState('');
   const [instructor, setInstructor] = useState('');
+  const [trainingKind, setTrainingKind] = useState<'new' | 'renewal'>('new');
   const [pricingType, setPricingType] = useState<'per_person' | 'global'>('per_person');
   const [basePrice, setBasePrice] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -35,10 +36,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       setCompanyId(training.companyId); setCategoryId(training.categoryId);
       setSelectedTypeIds(training.trainingTypeIds); setSelectedParticipantIds(training.participantIds);
       setDate(training.date); setLocation(training.location); setInstructor(training.instructor);
+      setTrainingKind(training.trainingKind || 'new');
       setPricingType(training.pricingType); setBasePrice(training.basePrice); setDiscountPercent(training.discountPercent);
     } else {
       setCompanyId(''); setCategoryId(''); setSelectedTypeIds([]); setSelectedParticipantIds([]);
-      setDate(''); setLocation(''); setInstructor('');
+      setDate(''); setLocation(''); setInstructor(''); setTrainingKind('new');
       setPricingType('per_person'); setBasePrice(0); setDiscountPercent(0);
     }
   }, [training, open]);
@@ -58,7 +60,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId || !categoryId || selectedTypeIds.length === 0 || selectedParticipantIds.length === 0 || !date) return;
-    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
+    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, trainingKind, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
     onOpenChange(false);
   };
 
@@ -126,10 +128,20 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
               )}
             </div>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="t-date">תאריך *</Label>
               <Input id="t-date" type="date" value={date} onChange={e => setDate(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label>סוג הדרכה</Label>
+              <Select value={trainingKind} onValueChange={(v) => setTrainingKind(v as 'new' | 'renewal')}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">הדרכה חדשה</SelectItem>
+                  <SelectItem value="renewal">ריענון</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="t-instructor">מדריך</Label>

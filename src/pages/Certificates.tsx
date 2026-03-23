@@ -58,6 +58,7 @@ const Certificates = () => {
       profession: emp?.profession || '',
       phone: emp?.phone || '',
       address: emp?.address || '',
+      trainingKind: cert.trainingKind === 'renewal' ? 'ריענון' : 'חדש',
     };
   };
 
