@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
