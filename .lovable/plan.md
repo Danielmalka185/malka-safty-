@@ -1,65 +1,40 @@
 
 
-# תיקון תעודות — מיקום שדות, קטגוריות, שמירה כתבנית חדשה, ובחירת תבנית בהדרכה
+# שינוי תצוגת תאריכים לפורמט עברי (D.M.YYYY)
 
-## הבעיות
+## מה ישתנה
 
-1. **שדות זזים שמאלה** — ב-preview וב-print, כל שדה ממוקם עם `transform: translate(-50%, -50%)` שמזיז את הטקסט חצי מהרוחב שלו שמאלה. בתמונה RTL זה לא מתאים — צריך לעגן לפי נקודת הציון בלי הזזה, או להתאים לכיוון
-2. **קטגוריות (נושאי הדרכה) מוצגות כשורת טקסט ארוכה** — כשיש 9 נושאים זה נראה גרוע. צריך תצוגת רשת/קוביות מסודרת
-3. **שמירה כתבנית חדשה** — כרגע "שמור" דורס את התבנית הקיימת. צריך כפתור "שמור כתבנית חדשה" שיוצר עותק עם שם חדש, כך שלכל קטגוריה יכולות להיות כמה תבניות
-4. **בחירת תבנית בהדרכה** — כשיוצרים הדרכה צריך לשאול באיזו תבנית להשתמש (מתוך התבניות של אותה קטגוריה)
+### 1. `src/lib/utils.ts` — פונקציה חדשה `formatDateHe`
+```typescript
+export function formatDateHe(dateStr: string): string {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return dateStr;
+  return `${parseInt(parts[2])}.${parseInt(parts[1])}.${parts[0]}`;
+}
+```
 
-## לגבי מודל חשבוניות
-אין מודל מוכן במערכת — צריך לבנות אחד מאפס. זה פיצ'ר נפרד שנתכנן בהמשך.
+### 2. עדכון כל הקבצים שמציגים תאריכים
 
----
+| קובץ | מה ישתנה |
+|---|---|
+| `src/pages/Certificates.tsx` | `cert.issueDate`, `cert.expiryDate` בטבלה + `getCertData` — date ו-expiryDate יעברו דרך `formatDateHe` |
+| `src/pages/Trainings.tsx` | `training.date` בטבלה |
+| `src/pages/Index.tsx` | `cert.expiryDate` ב-badge, `training.date` ברשימה, ייצוא CSV |
+| `src/pages/RiskSurveys.tsx` | `survey.date` בטבלה |
+| `src/components/EmployeeCard.tsx` | `cert.issueDate`, `cert.expiryDate` |
+| `src/components/CompanyCard.tsx` | `t.date`, `s.date` |
+| `src/components/CertificatePreview.tsx` | `defaultData` — שינוי ערכי ברירת מחדל לפורמט עברי, + `resolveFieldValue` יפרמט אוטומטית שדות שמכילים תאריך (date, expiryDate, issueDate) |
 
-## שינויים מתוכננים
+### 3. `src/components/CertificatePreview.tsx` — פורמט בתעודות
+- ב-`defaultData`: `date: '1.1.2025'`, `expiryDate: '1.1.2026'`
+- ב-`resolveFieldValue`: זיהוי שדות תאריך (key מכיל `date` או `Date`) והמרה אוטומטית אם הערך בפורמט ISO
+- זה מכסה גם שדות כפולים כמו `date_2`
 
-### 1. `CertificatePreview.tsx` + `ImageFieldEditor.tsx` — תיקון מיקום שדות
-- הסרת `transform: translate(-50%, -50%)` — במקום זה, עיגון לפי `right` ו-`top` (RTL-friendly)
-- סנכרון בין עורך, preview, והדפסה — אותו חישוב מיקום בשלושתם
-- שדה `trainingType` (נושאי הדרכה) — יוצג כרשת קוביות (grid) במקום שורת טקסט, עם אפשרות לקבוע את סגנון התצוגה
-
-### 2. `CertificatePreview.tsx` — תצוגת קטגוריות כקוביות
-- כשהשדה הוא `trainingType`, במקום `<div>` אחד עם טקסט, ליצור grid של badges/קוביות
-- כל נושא בתא נפרד, מסודר ברשת (grid 3x3 או לפי מספר הנושאים)
-- אותו דבר ב-`downloadCertificatePdf` — HTML grid
-
-### 3. `mockData.ts` — תמיכה במספר תבניות לקטגוריה
-- הוספת שדה `templateId` ל-`Training` interface — איזו תבנית נבחרה להדרכה הזו
-- הוספת שדה `templateId` ל-`Certificate` interface — שמירת הקישור לתבנית
-
-### 4. `CertificateTemplateEditor.tsx` — כפתור "שמור כתבנית חדשה"
-- כפתור נוסף ליד "שמור תבנית": **"שמור כתבנית חדשה"**
-- יוצר תבנית חדשה עם id חדש (העתק של הנוכחית עם השם החדש)
-- רשימת תבניות קיימות לכל קטגוריה — אפשר לבחור ביניהן
-
-### 5. `TrainingDialog.tsx` — בחירת תבנית בהדרכה
-- אחרי בחירת קטגוריה, מציג Select עם כל התבניות של אותה קטגוריה + תבנית ברירת מחדל
-- שומר את ה-templateId על ההדרכה
-
-### 6. `DataContext.tsx` — העברת templateId לתעודה
-- `addCertificatesForTraining` ישמור את ה-templateId מההדרכה על התעודה
-
-### 7. `Certificates.tsx` — שימוש ב-templateId
-- `getCertTemplate` ישתמש ב-`cert.templateId` (אם קיים) במקום לחפש לפי קטגוריה
-
----
-
-| # | קובץ | שינוי |
-|---|---|---|
-| 1 | `mockData.ts` | הוספת `templateId` ל-Training ו-Certificate |
-| 2 | `ImageFieldEditor.tsx` | תיקון עיגון שדות — הסרת translate(-50%,-50%) |
-| 3 | `CertificatePreview.tsx` | סנכרון מיקום + תצוגת grid לנושאי הדרכה |
-| 4 | `CertificateTemplateEditor.tsx` | כפתור "שמור כתבנית חדשה" + רשימת תבניות |
-| 5 | `TrainingDialog.tsx` | בחירת תבנית בהדרכה |
-| 6 | `DataContext.tsx` | העברת templateId לתעודה |
-| 7 | `Certificates.tsx` | שימוש ב-templateId מהתעודה |
+### 4. `src/pages/Certificates.tsx` — `getCertData`
+- `date: formatDateHe(cert.issueDate)` במקום הערך הגולמי
+- `expiryDate: formatDateHe(cert.expiryDate)`
 
 ## תוצאה
-- שדות ממוקמים במקום הנכון — בעורך, ב-preview, ובהדפסה
-- נושאי הדרכה מוצגים כקוביות מסודרות (תגיד לי את הסידור שאתה רוצה)
-- אפשר לשמור כמה תבניות לכל קטגוריה ולבחור ביניהן בהדרכה
-- חשבוניות — נתכנן כפיצ'ר נפרד
+כל תאריך בכל המערכת — טבלאות, דשבורד, כרטיסים, תעודות, תצוגה מקדימה, והדפסה — יוצג כ-`24.3.2026`
 
