@@ -30,17 +30,31 @@ const defaultData: Record<string, string> = {
   companyId: '51-1234567',
   companyPhone: '03-1234567',
   companyAddress: 'רחוב ראשי 1',
+  trainingKind: 'חדש',
 };
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, key) => data[key] || `{${key}}`);
 }
 
-// Resolve field key to data value — supports duplicate keys like "date_2" → data["date"]
 function resolveFieldValue(key: string, data: Record<string, string>): string {
   if (data[key]) return data[key];
   const baseKey = key.replace(/_\d+$/, '');
   return data[baseKey] || '';
+}
+
+// Shared field style — NO translate, anchor from right+top for RTL consistency
+function getFieldStyle(field: { xPercent: number; yPercent: number; fontSize: number; color: string }, scale = 1) {
+  return {
+    position: 'absolute' as const,
+    right: `${100 - field.xPercent}%`,
+    top: `${field.yPercent}%`,
+    fontSize: `${field.fontSize * scale}px`,
+    color: field.color,
+    whiteSpace: 'pre-line' as const,
+    fontWeight: 600,
+    fontFamily: "'Rubik', sans-serif",
+  };
 }
 
 export async function downloadCertificatePdf(
@@ -52,13 +66,22 @@ export async function downloadCertificatePdf(
   if (!printWindow) return;
 
   if (template.templateType === 'image' && template.backgroundImage) {
-    const bgUrl = template.backgroundImage.startsWith('data:')
-      ? template.backgroundImage
-      : template.backgroundImage;
+    const bgUrl = template.backgroundImage;
 
     const fieldsHtml = (template.imageFields || []).map(field => {
       const value = resolveFieldValue(field.key, mergedData);
-      return `<div style="position:absolute;left:${field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;transform:translate(-50%,-50%);font-weight:600;font-family:'Rubik',sans-serif;">${value}</div>`;
+      const isTrainingType = field.key === 'trainingType' || field.key.replace(/_\d+$/, '') === 'trainingType';
+      
+      if (isTrainingType && value.includes('\n')) {
+        const topics = value.split('\n').filter(Boolean);
+        const cols = topics.length <= 3 ? topics.length : topics.length <= 6 ? 3 : 3;
+        const badges = topics.map(t => 
+          `<span style="background:#e8e8e8;border-radius:4px;padding:2px 8px;font-size:${field.fontSize * 0.85}px;white-space:nowrap;">${t}</span>`
+        ).join('');
+        return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:40%;font-family:'Rubik',sans-serif;">${badges}</div>`;
+      }
+      
+      return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;font-weight:600;font-family:'Rubik',sans-serif;">${value}</div>`;
     }).join('');
 
     printWindow.document.write(`
@@ -132,8 +155,6 @@ export async function downloadCertificatePdf(
 
   printWindow.document.close();
   printWindow.focus();
-  // For image templates, print is triggered by img onload
-  // For HTML templates, use timeout
   if (!(template.templateType === 'image' && template.backgroundImage)) {
     setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
   }
@@ -166,21 +187,45 @@ const ImagePreview = ({ template, data }: { template: CertificateTemplate; data:
         className="absolute inset-0 w-full h-full object-fill rounded-lg"
         onLoad={handleLoad}
       />
-      {(template.imageFields || []).map((field, i) => (
-        <div
-          key={i}
-          className="absolute font-semibold whitespace-pre-line text-center"
-          style={{
-            left: `${field.xPercent}%`,
-            top: `${field.yPercent}%`,
-            fontSize: `${field.fontSize * 0.7}px`,
-            color: field.color,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          {resolveFieldValue(field.key, mergedData) || field.label}
-        </div>
-      ))}
+      {(template.imageFields || []).map((field, i) => {
+        const value = resolveFieldValue(field.key, mergedData);
+        const isTrainingType = field.key === 'trainingType' || field.key.replace(/_\d+$/, '') === 'trainingType';
+        
+        if (isTrainingType && value.includes('\n')) {
+          const topics = value.split('\n').filter(Boolean);
+          return (
+            <div
+              key={i}
+              className="absolute flex flex-wrap gap-1 justify-center"
+              style={{
+                right: `${100 - field.xPercent}%`,
+                top: `${field.yPercent}%`,
+                maxWidth: '40%',
+              }}
+            >
+              {topics.map((topic, ti) => (
+                <span
+                  key={ti}
+                  className="bg-muted rounded px-1.5 py-0.5 font-semibold"
+                  style={{ fontSize: `${field.fontSize * 0.55}px`, color: field.color, whiteSpace: 'nowrap' }}
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
+          );
+        }
+        
+        return (
+          <div
+            key={i}
+            className="absolute font-semibold whitespace-pre-line"
+            style={getFieldStyle(field, 0.7)}
+          >
+            {value || field.label}
+          </div>
+        );
+      })}
     </div>
   );
 };

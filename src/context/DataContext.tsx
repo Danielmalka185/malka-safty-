@@ -113,6 +113,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       companyId: training.companyId,
       trainingTypeIds: certTypeIds,
       trainingKind: training.trainingKind || 'new',
+      templateId: training.templateId,
       trainingId: training.id,
       issueDate,
       expiryDate,

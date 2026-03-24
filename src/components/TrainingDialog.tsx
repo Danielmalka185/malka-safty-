@@ -67,7 +67,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   };
 
   const handleCompanyChange = (val: string) => { setCompanyId(val); setSelectedParticipantIds([]); };
-  const handleCategoryChange = (val: string) => { setCategoryId(val); setSelectedTypeIds([]); };
+  const handleCategoryChange = (val: string) => { setCategoryId(val); setSelectedTypeIds([]); setTemplateId(''); };
+  const categoryTemplates = useMemo(() => {
+    if (!categoryId) return [];
+    return templates.filter(t => t.categoryId === categoryId || !t.categoryId);
+  }, [categoryId, templates]);
   const isValid = companyId && categoryId && selectedTypeIds.length > 0 && selectedParticipantIds.length > 0 && date;
 
   return (

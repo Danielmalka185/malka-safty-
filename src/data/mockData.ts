@@ -63,6 +63,7 @@ export interface Certificate {
   companyId: string;
   trainingTypeIds: string[];
   trainingKind: 'new' | 'renewal';
+  templateId?: string;
   trainingId: string;
   issueDate: string;
   expiryDate: string;
