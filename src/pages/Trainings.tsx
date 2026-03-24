@@ -123,7 +123,7 @@ const Trainings = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getCompanyName(training.companyId)}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{training.date}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDateHe(training.date)}</TableCell>
                     <TableCell className="hidden md:table-cell font-medium">{formatPrice(training)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{training.instructor}</TableCell>
                     <TableCell>
