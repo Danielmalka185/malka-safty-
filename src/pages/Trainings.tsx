@@ -11,6 +11,7 @@ import {
   trainingCategories,
   calculateFinalPrice, type Training,
 } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
 
