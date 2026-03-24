@@ -47,6 +47,7 @@ export interface Training {
   categoryId: string;
   trainingTypeIds: string[];
   trainingKind: 'new' | 'renewal';
+  templateId?: string;
   date: string;
   location: string;
   instructor: string;
