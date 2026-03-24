@@ -12,6 +12,7 @@ import TrainingTypes from "./pages/TrainingTypes";
 import Trainings from "./pages/Trainings";
 import Certificates from "./pages/Certificates";
 import RiskSurveys from "./pages/RiskSurveys";
+import Billings from "./pages/Billings";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/trainings" element={<Trainings />} />
               <Route path="/certificates" element={<Certificates />} />
               <Route path="/risk-surveys" element={<RiskSurveys />} />
+              <Route path="/billings" element={<Billings />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

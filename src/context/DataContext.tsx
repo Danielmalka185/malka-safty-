@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
   Company, Employee, Training, Certificate, CertificateTemplate, Instructor,
+  Billing, EmailTemplate, calculateFinalPrice,
   companies as initCompanies,
   employees as initEmployees,
   trainings as initTrainings,
@@ -11,6 +12,11 @@ import {
   trainingCategories,
 } from "@/data/mockData";
 
+const defaultEmailTemplate: EmailTemplate = {
+  subject: 'תעודת הסמכה — {trainingType}',
+  body: 'שלום {employeeName},\n\nמצורפת תעודת ההסמכה שלך בנושא {trainingType} מחברת {companyName}.\n\nההדרכה התקיימה בתאריך {date}.\n\nבברכה,\nצוות ניהול בטיחות',
+};
+
 interface DataContextType {
   companies: Company[];
   employees: Employee[];
@@ -18,6 +24,8 @@ interface DataContextType {
   certificates: Certificate[];
   templates: CertificateTemplate[];
   instructors: Instructor[];
+  billings: Billing[];
+  emailTemplate: EmailTemplate;
   addCompany: (data: Omit<Company, 'id'>) => Company;
   updateCompany: (data: Company) => void;
   addEmployee: (data: Omit<Employee, 'id'>) => Employee;
@@ -36,6 +44,9 @@ interface DataContextType {
   addInstructor: (data: Omit<Instructor, 'id'>) => Instructor;
   updateInstructor: (data: Instructor) => void;
   deleteInstructor: (id: string) => void;
+  addBilling: (data: Omit<Billing, 'id'>) => Billing;
+  updateBilling: (data: Billing) => void;
+  updateEmailTemplate: (data: EmailTemplate) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -53,6 +64,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [certificates, setCertificates] = useState<Certificate[]>([...initCertificates]);
   const [templates, setTemplates] = useState<CertificateTemplate[]>([...initTemplates]);
   const [instructors, setInstructors] = useState<Instructor[]>([...initInstructors]);
+  const [billings, setBillings] = useState<Billing[]>([]);
+  const [emailTemplate, setEmailTemplate] = useState<EmailTemplate>(defaultEmailTemplate);
 
   const addCompany = useCallback((data: Omit<Company, 'id'>): Company => {
     const newCompany: Company = { ...data, id: `c${Date.now()}` };
@@ -77,6 +90,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addTraining = useCallback((data: Omit<Training, 'id'>): Training => {
     const newTraining: Training = { ...data, id: `tr${Date.now()}` };
     setTrainings(prev => [...prev, newTraining]);
+    // Auto-create billing
+    const amount = calculateFinalPrice(newTraining as Training);
+    if (amount > 0) {
+      const billing: Billing = {
+        id: `bill-${Date.now()}`,
+        trainingId: newTraining.id,
+        companyId: newTraining.companyId,
+        amount,
+        status: 'pending',
+        dueDate: newTraining.date,
+        notes: '',
+      };
+      setBillings(prev => [...prev, billing]);
+    }
     return newTraining;
   }, []);
 
@@ -174,9 +201,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setInstructors(prev => prev.filter(i => i.id !== id));
   }, []);
 
+  const addBilling = useCallback((data: Omit<Billing, 'id'>): Billing => {
+    const newBilling: Billing = { ...data, id: `bill-${Date.now()}` };
+    setBillings(prev => [...prev, newBilling]);
+    return newBilling;
+  }, []);
+
+  const updateBilling = useCallback((data: Billing) => {
+    setBillings(prev => prev.map(b => b.id === data.id ? data : b));
+  }, []);
+
+  const updateEmailTemplateFn = useCallback((data: EmailTemplate) => {
+    setEmailTemplate(data);
+  }, []);
+
   return (
     <DataContext.Provider value={{
       companies, employees, trainings, certificates, templates, instructors,
+      billings, emailTemplate,
       addCompany, updateCompany,
       addEmployee, updateEmployee,
       addTraining, updateTraining,
@@ -186,6 +228,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       getEmployee: getEmployeeById,
       getTrainingTypeName, getCategoryName,
       addInstructor, updateInstructor, deleteInstructor,
+      addBilling, updateBilling,
+      updateEmailTemplate: updateEmailTemplateFn,
     }}>
       {children}
     </DataContext.Provider>
