@@ -18,7 +18,7 @@ interface TrainingDialogProps {
 }
 
 const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialogProps) => {
-  const { companies, employees, instructors } = useData();
+  const { companies, employees, instructors, templates } = useData();
   const [companyId, setCompanyId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
@@ -27,6 +27,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const [location, setLocation] = useState('');
   const [instructor, setInstructor] = useState('');
   const [trainingKind, setTrainingKind] = useState<'new' | 'renewal'>('new');
+  const [templateId, setTemplateId] = useState('');
   const [pricingType, setPricingType] = useState<'per_person' | 'global'>('per_person');
   const [basePrice, setBasePrice] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
