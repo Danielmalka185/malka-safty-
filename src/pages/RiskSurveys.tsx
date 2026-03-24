@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { riskSurveys, getCompanyName } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 
 const RiskSurveys = () => {
   const [search, setSearch] = useState("");
