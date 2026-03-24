@@ -12,6 +12,7 @@ import TrainingTypes from "./pages/TrainingTypes";
 import Trainings from "./pages/Trainings";
 import Certificates from "./pages/Certificates";
 import RiskSurveys from "./pages/RiskSurveys";
+import Billings from "./pages/Billings";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
