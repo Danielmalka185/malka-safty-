@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 import type { CertificateTemplate } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 
 interface CertificatePreviewProps {
   template: CertificateTemplate;
@@ -17,8 +18,8 @@ const defaultData: Record<string, string> = {
   companyName: 'חברה לדוגמה',
   trainingType: 'הדרכת בטיחות',
   categoryName: 'בטיחות כללית',
-  date: '2025-01-01',
-  expiryDate: '2026-01-01',
+  date: '1.1.2025',
+  expiryDate: '1.1.2026',
   instructor: 'מדריך לדוגמה',
   instructorPhone: '050-0000000',
   instructorId: '200000000',
@@ -38,9 +39,13 @@ function replacePlaceholders(text: string, data: Record<string, string>): string
 }
 
 function resolveFieldValue(key: string, data: Record<string, string>): string {
-  if (data[key]) return data[key];
+  const value = data[key] || data[key.replace(/_\d+$/, '')] || '';
+  // Auto-format ISO date strings (YYYY-MM-DD) to Hebrew format
   const baseKey = key.replace(/_\d+$/, '');
-  return data[baseKey] || '';
+  if ((baseKey.toLowerCase().includes('date') || baseKey === 'issueDate' || baseKey === 'expiryDate') && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return formatDateHe(value);
+  }
+  return value;
 }
 
 // Shared field style — NO translate, anchor from right+top for RTL consistency

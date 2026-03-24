@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import CertificatePreview, { downloadCertificatePdf } from "@/components/CertificatePreview";
 import { useData } from "@/context/DataContext";
+import { formatDateHe } from "@/lib/utils";
 import type { Certificate } from "@/data/mockData";
 
 const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פג תוקף', expiring_soon: 'עומד לפוג' };
@@ -50,8 +51,8 @@ const Certificates = () => {
       companyAddress: company?.address || '',
       trainingType: typeNames,
       categoryName: getCategoryName(categoryId),
-      date: cert.issueDate,
-      expiryDate: cert.expiryDate,
+      date: formatDateHe(cert.issueDate),
+      expiryDate: formatDateHe(cert.expiryDate),
       instructor: training?.instructor || '',
       birthYear: emp?.birthYear?.toString() || '',
       fatherName: emp?.fatherName || '',
@@ -140,8 +141,8 @@ const Certificates = () => {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
-                    <TableCell>{cert.expiryDate}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDateHe(cert.issueDate)}</TableCell>
+                    <TableCell>{formatDateHe(cert.expiryDate)}</TableCell>
                     <TableCell><Badge variant={statusVariants[cert.status]}>{statusLabels[cert.status]}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">

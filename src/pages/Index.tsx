@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useData } from "@/context/DataContext";
+import { formatDateHe } from "@/lib/utils";
 
 const Dashboard = () => {
   const { companies, employees, trainings, certificates, getEmployeeName, getCompanyName, getCategoryName, getTrainingTypeName } = useData();
@@ -39,7 +40,7 @@ const Dashboard = () => {
       const empName = getEmployeeName(cert.employeeId);
       const compName = getCompanyName(cert.companyId);
       const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join(' | ');
-      return `"${empName}","${compName}","${typeNames}","${cert.expiryDate}"`;
+      return `"${empName}","${compName}","${typeNames}","${formatDateHe(cert.expiryDate)}"`;
     }).join('\n');
     const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -100,7 +101,7 @@ const Dashboard = () => {
                         ))}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-warning border-warning">{cert.expiryDate}</Badge>
+                    <Badge variant="outline" className="text-warning border-warning">{formatDateHe(cert.expiryDate)}</Badge>
                   </div>
                 ))}
                 {expiringCerts.length > 5 && (
@@ -131,7 +132,7 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">{training.location}</p>
                   </div>
                   <div className="text-left">
-                    <p className="text-sm">{training.date}</p>
+                    <p className="text-sm">{formatDateHe(training.date)}</p>
                     <p className="text-xs text-muted-foreground">{training.participantIds.length} משתתפים</p>
                   </div>
                 </div>

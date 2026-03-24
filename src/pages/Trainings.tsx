@@ -11,6 +11,7 @@ import {
   trainingCategories,
   calculateFinalPrice, type Training,
 } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
 
@@ -122,7 +123,7 @@ const Trainings = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getCompanyName(training.companyId)}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{training.date}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDateHe(training.date)}</TableCell>
                     <TableCell className="hidden md:table-cell font-medium">{formatPrice(training)}</TableCell>
                     <TableCell className="hidden lg:table-cell">{training.instructor}</TableCell>
                     <TableCell>
@@ -163,7 +164,7 @@ const Trainings = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">חברה:</span><p className="font-medium">{getCompanyName(viewTraining.companyId)}</p></div>
-                  <div><span className="text-muted-foreground">תאריך:</span><p className="font-medium">{viewTraining.date}</p></div>
+                  <div><span className="text-muted-foreground">תאריך:</span><p className="font-medium">{formatDateHe(viewTraining.date)}</p></div>
                   <div><span className="text-muted-foreground">מיקום:</span><p className="font-medium">{viewTraining.location || '—'}</p></div>
                   <div><span className="text-muted-foreground">מדריך:</span><p className="font-medium">{viewTraining.instructor || '—'}</p></div>
                 </div>

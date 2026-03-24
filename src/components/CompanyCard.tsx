@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Company, riskSurveys } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
+import { formatDateHe } from "@/lib/utils";
 
 interface CompanyCardProps {
   company: Company | null;
@@ -101,7 +102,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
                   <p className="text-xs text-muted-foreground">{t.location} • {t.instructor}</p>
                 </div>
                 <div className="text-left">
-                  <p className="text-sm">{t.date}</p>
+                  <p className="text-sm">{formatDateHe(t.date)}</p>
                   <p className="text-xs text-muted-foreground">{t.participantIds.length} משתתפים</p>
                 </div>
               </div>
@@ -113,7 +114,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
               <div key={s.id} className="p-3 bg-muted/40 rounded-lg">
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-medium text-sm">{s.siteName}</p>
-                  <p className="text-sm text-muted-foreground">{s.date}</p>
+                  <p className="text-sm text-muted-foreground">{formatDateHe(s.date)}</p>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2">{s.findings}</p>
               </div>

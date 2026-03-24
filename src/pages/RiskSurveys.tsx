@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { riskSurveys, getCompanyName } from "@/data/mockData";
+import { formatDateHe } from "@/lib/utils";
 
 const RiskSurveys = () => {
   const [search, setSearch] = useState("");
@@ -59,7 +60,7 @@ const RiskSurveys = () => {
                     </div>
                   </TableCell>
                   <TableCell>{getCompanyName(survey.companyId)}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{survey.date}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{formatDateHe(survey.date)}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     <p className="text-sm truncate max-w-[200px]">{survey.findings}</p>
                   </TableCell>
