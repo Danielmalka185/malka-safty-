@@ -101,7 +101,7 @@ const Dashboard = () => {
                         ))}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-warning border-warning">{cert.expiryDate}</Badge>
+                    <Badge variant="outline" className="text-warning border-warning">{formatDateHe(cert.expiryDate)}</Badge>
                   </div>
                 ))}
                 {expiringCerts.length > 5 && (
