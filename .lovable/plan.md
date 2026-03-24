@@ -1,40 +1,66 @@
 
 
-# שינוי תצוגת תאריכים לפורמט עברי (D.M.YYYY)
+# הוספת טאב חיובים + הכנת תשתית לשליחת מיילים
 
-## מה ישתנה
+## סיכום
+שני דברים:
+1. **טאב חיובים** — מעקב אחרי חיובים לפי הדרכה (בוצע / לא בוצע), בלי חשבוניות
+2. **טאב תבנית מייל בהגדרות** — הכנת UI לניהול נוסח המייל שנשלח עם תעודות (השליחה בפועל תחובר בהמשך עם Lovable Cloud)
 
-### 1. `src/lib/utils.ts` — פונקציה חדשה `formatDateHe`
+---
+
+## שינויים
+
+### 1. `src/data/mockData.ts` — interface חדש `Billing`
 ```typescript
-export function formatDateHe(dateStr: string): string {
-  if (!dateStr) return '';
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return dateStr;
-  return `${parseInt(parts[2])}.${parseInt(parts[1])}.${parts[0]}`;
+export interface Billing {
+  id: string;
+  trainingId: string;
+  companyId: string;
+  amount: number;        // סכום סופי (אחרי הנחה)
+  status: 'pending' | 'paid';
+  dueDate: string;
+  paidDate?: string;
+  notes: string;
 }
 ```
++ interface `EmailTemplate` לנוסח מייל (subject, body עם placeholders)
 
-### 2. עדכון כל הקבצים שמציגים תאריכים
+### 2. `src/context/DataContext.tsx` — ניהול חיובים + תבנית מייל
+- State חדש: `billings`, `emailTemplate`
+- פונקציות: `addBilling`, `updateBilling` (שינוי סטטוס ל-paid), `updateEmailTemplate`
+- כשיוצרים הדרכה (`addTraining`) — נוצר חיוב אוטומטי עם הסכום מ-`calculateFinalPrice`
 
-| קובץ | מה ישתנה |
-|---|---|
-| `src/pages/Certificates.tsx` | `cert.issueDate`, `cert.expiryDate` בטבלה + `getCertData` — date ו-expiryDate יעברו דרך `formatDateHe` |
-| `src/pages/Trainings.tsx` | `training.date` בטבלה |
-| `src/pages/Index.tsx` | `cert.expiryDate` ב-badge, `training.date` ברשימה, ייצוא CSV |
-| `src/pages/RiskSurveys.tsx` | `survey.date` בטבלה |
-| `src/components/EmployeeCard.tsx` | `cert.issueDate`, `cert.expiryDate` |
-| `src/components/CompanyCard.tsx` | `t.date`, `s.date` |
-| `src/components/CertificatePreview.tsx` | `defaultData` — שינוי ערכי ברירת מחדל לפורמט עברי, + `resolveFieldValue` יפרמט אוטומטית שדות שמכילים תאריך (date, expiryDate, issueDate) |
+### 3. `src/pages/Billings.tsx` — עמוד חיובים חדש
+- טבלה עם: חברה, הדרכה, סכום, סטטוס (ממתין/שולם), תאריך
+- Badge צבעוני לסטטוס
+- כפתור "סמן כשולם" שמעדכן סטטוס + תאריך תשלום
+- חיפוש וסינון לפי חברה וסטטוס
+- סיכום: סה"כ ממתין / סה"כ שולם
 
-### 3. `src/components/CertificatePreview.tsx` — פורמט בתעודות
-- ב-`defaultData`: `date: '1.1.2025'`, `expiryDate: '1.1.2026'`
-- ב-`resolveFieldValue`: זיהוי שדות תאריך (key מכיל `date` או `Date`) והמרה אוטומטית אם הערך בפורמט ISO
-- זה מכסה גם שדות כפולים כמו `date_2`
+### 4. `src/pages/Settings.tsx` — טאב תבנית מייל
+- טאב שלישי "תבנית מייל" עם אייקון Mail
+- עורך פשוט: שדה נושא (subject) + textarea לגוף המייל
+- Placeholders זמינים: `{employeeName}`, `{companyName}`, `{trainingType}`, `{date}`
+- כפתור שמירה
+- (השליחה בפועל תחובר בשלב הבא עם Lovable Cloud)
 
-### 4. `src/pages/Certificates.tsx` — `getCertData`
-- `date: formatDateHe(cert.issueDate)` במקום הערך הגולמי
-- `expiryDate: formatDateHe(cert.expiryDate)`
+### 5. `src/components/AppSidebar.tsx` + `src/App.tsx` — ניווט + route
+- הוספת "חיובים" לתפריט עם אייקון `CreditCard`
+- Route חדש: `/billings`
+
+---
+
+| # | קובץ | שינוי |
+|---|---|---|
+| 1 | `mockData.ts` | interfaces: Billing, EmailTemplate |
+| 2 | `DataContext.tsx` | state + פונקציות חיובים ומייל |
+| 3 | `Billings.tsx` (חדש) | עמוד מעקב חיובים |
+| 4 | `Settings.tsx` | טאב תבנית מייל |
+| 5 | `AppSidebar.tsx` + `App.tsx` | ניווט ו-route |
 
 ## תוצאה
-כל תאריך בכל המערכת — טבלאות, דשבורד, כרטיסים, תעודות, תצוגה מקדימה, והדפסה — יוצג כ-`24.3.2026`
+- מעקב חיובים לכל הדרכה — ממתין/שולם
+- עורך נוסח מייל בהגדרות (מוכן לחיבור שליחה בהמשך)
+- חיוב נוצר אוטומטית עם יצירת הדרכה
 
