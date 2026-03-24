@@ -72,7 +72,7 @@ export function EmployeeCard({ employee, open, onOpenChange, onEdit }: EmployeeC
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      הונפקה: {cert.issueDate} • תפוגה: {cert.expiryDate}
+                      הונפקה: {formatDateHe(cert.issueDate)} • תפוגה: {formatDateHe(cert.expiryDate)}
                     </p>
                   </div>
                   <Badge variant={

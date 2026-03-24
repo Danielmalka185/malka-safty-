@@ -39,9 +39,13 @@ function replacePlaceholders(text: string, data: Record<string, string>): string
 }
 
 function resolveFieldValue(key: string, data: Record<string, string>): string {
-  if (data[key]) return data[key];
+  const value = data[key] || data[key.replace(/_\d+$/, '')] || '';
+  // Auto-format ISO date strings (YYYY-MM-DD) to Hebrew format
   const baseKey = key.replace(/_\d+$/, '');
-  return data[baseKey] || '';
+  if ((baseKey.toLowerCase().includes('date') || baseKey === 'issueDate' || baseKey === 'expiryDate') && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return formatDateHe(value);
+  }
+  return value;
 }
 
 // Shared field style — NO translate, anchor from right+top for RTL consistency

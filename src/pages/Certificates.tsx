@@ -141,8 +141,8 @@ const Certificates = () => {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{cert.issueDate}</TableCell>
-                    <TableCell>{cert.expiryDate}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDateHe(cert.issueDate)}</TableCell>
+                    <TableCell>{formatDateHe(cert.expiryDate)}</TableCell>
                     <TableCell><Badge variant={statusVariants[cert.status]}>{statusLabels[cert.status]}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">

@@ -132,7 +132,7 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">{training.location}</p>
                   </div>
                   <div className="text-left">
-                    <p className="text-sm">{training.date}</p>
+                    <p className="text-sm">{formatDateHe(training.date)}</p>
                     <p className="text-xs text-muted-foreground">{training.participantIds.length} משתתפים</p>
                   </div>
                 </div>

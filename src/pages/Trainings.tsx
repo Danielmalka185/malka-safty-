@@ -164,7 +164,7 @@ const Trainings = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-muted-foreground">חברה:</span><p className="font-medium">{getCompanyName(viewTraining.companyId)}</p></div>
-                  <div><span className="text-muted-foreground">תאריך:</span><p className="font-medium">{viewTraining.date}</p></div>
+                  <div><span className="text-muted-foreground">תאריך:</span><p className="font-medium">{formatDateHe(viewTraining.date)}</p></div>
                   <div><span className="text-muted-foreground">מיקום:</span><p className="font-medium">{viewTraining.location || '—'}</p></div>
                   <div><span className="text-muted-foreground">מדריך:</span><p className="font-medium">{viewTraining.instructor || '—'}</p></div>
                 </div>

@@ -60,7 +60,7 @@ const RiskSurveys = () => {
                     </div>
                   </TableCell>
                   <TableCell>{getCompanyName(survey.companyId)}</TableCell>
-                  <TableCell className="hidden sm:table-cell">{survey.date}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{formatDateHe(survey.date)}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     <p className="text-sm truncate max-w-[200px]">{survey.findings}</p>
                   </TableCell>

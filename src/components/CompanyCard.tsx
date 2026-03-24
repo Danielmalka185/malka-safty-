@@ -114,7 +114,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
               <div key={s.id} className="p-3 bg-muted/40 rounded-lg">
                 <div className="flex items-center justify-between mb-1">
                   <p className="font-medium text-sm">{s.siteName}</p>
-                  <p className="text-sm text-muted-foreground">{s.date}</p>
+                  <p className="text-sm text-muted-foreground">{formatDateHe(s.date)}</p>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2">{s.findings}</p>
               </div>
