@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { Employee } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
+import { formatDateHe } from "@/lib/utils";
 
 interface EmployeeCardProps {
   employee: Employee | null;
