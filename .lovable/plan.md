@@ -1,45 +1,65 @@
 
 
-# הוספת שדה "חדש/ריענון" + שדות כפולים בתעודה
+# תיקון תעודות — מיקום שדות, קטגוריות, שמירה כתבנית חדשה, ובחירת תבנית בהדרכה
 
-## מה צריך
+## הבעיות
 
-1. **שדה "סוג הדרכה: חדש / ריענון"** — בכל הדרכה (Training) ובתעודה (Certificate)
-2. **שדה זה יופיע גם על התעודה** — כדי שרואים אם זה "חדש" או "ריענון"
-3. **אפשרות להוסיף שדה כפול** — למשל תאריך שמופיע ב-2-3 מקומות על התעודה (כל אחד במיקום אחר)
-4. **שמירת התבנית הנוכחית** — לא לאבד את מה שכבר הגדרת
+1. **שדות זזים שמאלה** — ב-preview וב-print, כל שדה ממוקם עם `transform: translate(-50%, -50%)` שמזיז את הטקסט חצי מהרוחב שלו שמאלה. בתמונה RTL זה לא מתאים — צריך לעגן לפי נקודת הציון בלי הזזה, או להתאים לכיוון
+2. **קטגוריות (נושאי הדרכה) מוצגות כשורת טקסט ארוכה** — כשיש 9 נושאים זה נראה גרוע. צריך תצוגת רשת/קוביות מסודרת
+3. **שמירה כתבנית חדשה** — כרגע "שמור" דורס את התבנית הקיימת. צריך כפתור "שמור כתבנית חדשה" שיוצר עותק עם שם חדש, כך שלכל קטגוריה יכולות להיות כמה תבניות
+4. **בחירת תבנית בהדרכה** — כשיוצרים הדרכה צריך לשאול באיזו תבנית להשתמש (מתוך התבניות של אותה קטגוריה)
 
-## שינויים
+## לגבי מודל חשבוניות
+אין מודל מוכן במערכת — צריך לבנות אחד מאפס. זה פיצ'ר נפרד שנתכנן בהמשך.
 
-### 1. `src/data/mockData.ts` — הוספת שדה trainingKind
-- ב-`Training` interface: הוספת `trainingKind: 'new' | 'renewal'`
-- ב-`Certificate` interface: הוספת `trainingKind: 'new' | 'renewal'`
+---
 
-### 2. `src/components/TrainingDialog.tsx` — בחירת חדש/ריענון
-- הוספת Select עם שתי אפשרויות: "הדרכה חדשה" / "ריענון"
-- ברירת מחדל: "חדש"
+## שינויים מתוכננים
 
-### 3. `src/context/DataContext.tsx` — העברת trainingKind לתעודה
-- `addCertificatesForTraining` יעביר את ה-`trainingKind` מההדרכה לתעודה
+### 1. `CertificatePreview.tsx` + `ImageFieldEditor.tsx` — תיקון מיקום שדות
+- הסרת `transform: translate(-50%, -50%)` — במקום זה, עיגון לפי `right` ו-`top` (RTL-friendly)
+- סנכרון בין עורך, preview, והדפסה — אותו חישוב מיקום בשלושתם
+- שדה `trainingType` (נושאי הדרכה) — יוצג כרשת קוביות (grid) במקום שורת טקסט, עם אפשרות לקבוע את סגנון התצוגה
 
-### 4. `src/components/ImageFieldEditor.tsx` — שדות חדשים + אפשרות כפילות
-- הוספת שדה `trainingKind` (חדש/ריענון) לרשימת השדות הזמינים
-- **כפתור "הוסף שדה נוסף"** — מאפשר להוסיף אותו שדה יותר מפעם אחת (למשל תאריך ב-2 מקומות שונים)
-- כרגע ה-key חייב להיות ייחודי — נשנה ל-key עם סיומת מספרית (`date`, `date_2`, `date_3`)
+### 2. `CertificatePreview.tsx` — תצוגת קטגוריות כקוביות
+- כשהשדה הוא `trainingType`, במקום `<div>` אחד עם טקסט, ליצור grid של badges/קוביות
+- כל נושא בתא נפרד, מסודר ברשת (grid 3x3 או לפי מספר הנושאים)
+- אותו דבר ב-`downloadCertificatePdf` — HTML grid
 
-### 5. `src/components/CertificatePreview.tsx` — תמיכה בשדות כפולים + trainingKind
-- במיפוי הנתונים: `date_2` → אותו ערך כמו `date`
-- `trainingKind` → "חדש" / "ריענון"
+### 3. `mockData.ts` — תמיכה במספר תבניות לקטגוריה
+- הוספת שדה `templateId` ל-`Training` interface — איזו תבנית נבחרה להדרכה הזו
+- הוספת שדה `templateId` ל-`Certificate` interface — שמירת הקישור לתבנית
 
-### 6. `src/pages/Certificates.tsx` — העשרת getCertData
-- הוספת `trainingKind` לנתוני התעודה
+### 4. `CertificateTemplateEditor.tsx` — כפתור "שמור כתבנית חדשה"
+- כפתור נוסף ליד "שמור תבנית": **"שמור כתבנית חדשה"**
+- יוצר תבנית חדשה עם id חדש (העתק של הנוכחית עם השם החדש)
+- רשימת תבניות קיימות לכל קטגוריה — אפשר לבחור ביניהן
+
+### 5. `TrainingDialog.tsx` — בחירת תבנית בהדרכה
+- אחרי בחירת קטגוריה, מציג Select עם כל התבניות של אותה קטגוריה + תבנית ברירת מחדל
+- שומר את ה-templateId על ההדרכה
+
+### 6. `DataContext.tsx` — העברת templateId לתעודה
+- `addCertificatesForTraining` ישמור את ה-templateId מההדרכה על התעודה
+
+### 7. `Certificates.tsx` — שימוש ב-templateId
+- `getCertTemplate` ישתמש ב-`cert.templateId` (אם קיים) במקום לחפש לפי קטגוריה
+
+---
 
 | # | קובץ | שינוי |
 |---|---|---|
-| 1 | `mockData.ts` | הוספת `trainingKind` ל-Training ו-Certificate |
-| 2 | `TrainingDialog.tsx` | Select חדש/ריענון |
-| 3 | `DataContext.tsx` | העברת trainingKind לתעודה |
-| 4 | `ImageFieldEditor.tsx` | שדה trainingKind + כפתור הוסף שדה כפול |
-| 5 | `CertificatePreview.tsx` | תמיכה בשדות כפולים + trainingKind |
-| 6 | `Certificates.tsx` | trainingKind ב-getCertData |
+| 1 | `mockData.ts` | הוספת `templateId` ל-Training ו-Certificate |
+| 2 | `ImageFieldEditor.tsx` | תיקון עיגון שדות — הסרת translate(-50%,-50%) |
+| 3 | `CertificatePreview.tsx` | סנכרון מיקום + תצוגת grid לנושאי הדרכה |
+| 4 | `CertificateTemplateEditor.tsx` | כפתור "שמור כתבנית חדשה" + רשימת תבניות |
+| 5 | `TrainingDialog.tsx` | בחירת תבנית בהדרכה |
+| 6 | `DataContext.tsx` | העברת templateId לתעודה |
+| 7 | `Certificates.tsx` | שימוש ב-templateId מהתעודה |
+
+## תוצאה
+- שדות ממוקמים במקום הנכון — בעורך, ב-preview, ובהדפסה
+- נושאי הדרכה מוצגים כקוביות מסודרות (תגיד לי את הסידור שאתה רוצה)
+- אפשר לשמור כמה תבניות לכל קטגוריה ולבחור ביניהן בהדרכה
+- חשבוניות — נתכנן כפיצ'ר נפרד
 
