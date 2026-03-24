@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Company, riskSurveys } from "@/data/mockData";
 import { useData } from "@/context/DataContext";
+import { formatDateHe } from "@/lib/utils";
 
 interface CompanyCardProps {
   company: Company | null;
