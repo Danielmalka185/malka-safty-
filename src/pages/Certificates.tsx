@@ -64,7 +64,6 @@ const Certificates = () => {
 
   const getCertTemplate = (cert: Certificate) => {
     if (cert.templateId) {
-      const { templates } = useData();
       const tmpl = templates.find(t => t.id === cert.templateId);
       if (tmpl) return tmpl;
     }
