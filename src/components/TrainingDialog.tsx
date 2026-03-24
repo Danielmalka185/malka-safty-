@@ -18,7 +18,7 @@ interface TrainingDialogProps {
 }
 
 const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialogProps) => {
-  const { companies, employees, instructors } = useData();
+  const { companies, employees, instructors, templates } = useData();
   const [companyId, setCompanyId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [selectedTypeIds, setSelectedTypeIds] = useState<string[]>([]);
@@ -27,6 +27,7 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const [location, setLocation] = useState('');
   const [instructor, setInstructor] = useState('');
   const [trainingKind, setTrainingKind] = useState<'new' | 'renewal'>('new');
+  const [templateId, setTemplateId] = useState('');
   const [pricingType, setPricingType] = useState<'per_person' | 'global'>('per_person');
   const [basePrice, setBasePrice] = useState(0);
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -37,10 +38,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       setSelectedTypeIds(training.trainingTypeIds); setSelectedParticipantIds(training.participantIds);
       setDate(training.date); setLocation(training.location); setInstructor(training.instructor);
       setTrainingKind(training.trainingKind || 'new');
+      setTemplateId(training.templateId || '');
       setPricingType(training.pricingType); setBasePrice(training.basePrice); setDiscountPercent(training.discountPercent);
     } else {
       setCompanyId(''); setCategoryId(''); setSelectedTypeIds([]); setSelectedParticipantIds([]);
-      setDate(''); setLocation(''); setInstructor(''); setTrainingKind('new');
+      setDate(''); setLocation(''); setInstructor(''); setTrainingKind('new'); setTemplateId('');
       setPricingType('per_person'); setBasePrice(0); setDiscountPercent(0);
     }
   }, [training, open]);
@@ -60,12 +62,16 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!companyId || !categoryId || selectedTypeIds.length === 0 || selectedParticipantIds.length === 0 || !date) return;
-    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, trainingKind, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
+    onSave({ id: training?.id, companyId, categoryId, trainingTypeIds: selectedTypeIds, trainingKind, templateId: templateId || undefined, date, location, instructor, participantIds: selectedParticipantIds, pricingType, basePrice, discountPercent });
     onOpenChange(false);
   };
 
   const handleCompanyChange = (val: string) => { setCompanyId(val); setSelectedParticipantIds([]); };
-  const handleCategoryChange = (val: string) => { setCategoryId(val); setSelectedTypeIds([]); };
+  const handleCategoryChange = (val: string) => { setCategoryId(val); setSelectedTypeIds([]); setTemplateId(''); };
+  const categoryTemplates = useMemo(() => {
+    if (!categoryId) return [];
+    return templates.filter(t => t.categoryId === categoryId || !t.categoryId);
+  }, [categoryId, templates]);
   const isValid = companyId && categoryId && selectedTypeIds.length > 0 && selectedParticipantIds.length > 0 && date;
 
   return (
@@ -103,6 +109,19 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
                   </label>
                 ))}
               </div>
+            </div>
+          )}
+          {categoryId && categoryTemplates.length > 0 && (
+            <div className="space-y-2">
+              <Label>תבנית תעודה</Label>
+              <Select value={templateId} onValueChange={setTemplateId}>
+                <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
+                <SelectContent>
+                  {categoryTemplates.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
           {companyId && (

@@ -207,11 +207,10 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
             key={idx}
             className="absolute bg-primary/20 border border-primary rounded px-2 py-0.5 text-xs cursor-move hover:bg-primary/30 transition-colors"
             style={{
-              left: `${field.xPercent}%`,
+              right: `${100 - field.xPercent}%`,
               top: `${field.yPercent}%`,
               fontSize: field.fontSize * 0.7,
               color: field.color,
-              transform: 'translate(-50%, -50%)',
             }}
             onMouseDown={(e) => handleMouseDown(e, idx)}
             onClick={(e) => e.stopPropagation()}

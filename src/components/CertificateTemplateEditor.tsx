@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, FileText, Image } from "lucide-react";
+import { Save, FileText, Image, Copy } from "lucide-react";
 import CertificatePreview from "@/components/CertificatePreview";
 import ImageFieldEditor from "@/components/ImageFieldEditor";
 import { useData } from "@/context/DataContext";
@@ -31,20 +31,16 @@ const placeholders = [
 
 const CertificateTemplateEditor = () => {
   const { templates, addTemplate, updateTemplate } = useData();
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__default__');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(templates[0]?.id || '');
 
-  const effectiveCategoryId = selectedCategoryId === '__default__' ? '' : selectedCategoryId;
-  const currentTemplate = templates.find(t => t.categoryId === effectiveCategoryId)
-    || templates.find(t => t.categoryId === '')!;
+  const currentTemplate = templates.find(t => t.id === selectedTemplateId) || templates[0];
 
   const [form, setFormState] = useState<CertificateTemplate>(currentTemplate);
 
-  const selectCategory = (catId: string) => {
-    setSelectedCategoryId(catId);
-    const effCatId = catId === '__default__' ? '' : catId;
-    const tmpl = templates.find(t => t.categoryId === effCatId)
-      || templates.find(t => t.categoryId === '')!;
-    setFormState({ ...tmpl });
+  const selectTemplate = (tmplId: string) => {
+    setSelectedTemplateId(tmplId);
+    const tmpl = templates.find(t => t.id === tmplId);
+    if (tmpl) setFormState({ ...tmpl });
   };
 
   const updateField = <K extends keyof CertificateTemplate>(key: K, value: CertificateTemplate[K]) => {
@@ -52,15 +48,34 @@ const CertificateTemplateEditor = () => {
   };
 
   const handleSave = () => {
-    const saveForm = { ...form, categoryId: effectiveCategoryId };
-    const existing = templates.find(t => t.id === saveForm.id);
+    const existing = templates.find(t => t.id === form.id);
     if (existing) {
-      updateTemplate(saveForm);
+      updateTemplate(form);
     } else {
-      addTemplate(saveForm);
+      addTemplate(form);
     }
-    toast.success(`התבנית "${saveForm.name}" נשמרה בהצלחה`);
+    toast.success(`התבנית "${form.name}" נשמרה בהצלחה`);
   };
+
+  const handleSaveAsNew = () => {
+    const newName = form.name.includes('(עותק)') ? form.name : `${form.name} (עותק)`;
+    const newTemplate: CertificateTemplate = {
+      ...form,
+      id: `tmpl-${Date.now()}`,
+      name: newName,
+    };
+    const added = addTemplate(newTemplate);
+    setFormState(added);
+    setSelectedTemplateId(added.id);
+    toast.success(`התבנית "${added.name}" נוצרה בהצלחה`);
+  };
+
+  // Group templates by category for display
+  const templatesByCategory = trainingCategories.map(cat => ({
+    category: cat,
+    templates: templates.filter(t => t.categoryId === cat.id),
+  }));
+  const defaultTemplates = templates.filter(t => !t.categoryId);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -68,21 +83,49 @@ const CertificateTemplateEditor = () => {
       <div className="space-y-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">בחר קטגוריה</CardTitle>
+            <CardTitle className="text-lg">בחר תבנית</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Select value={selectedCategoryId} onValueChange={selectCategory}>
-              <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
+            <Select value={selectedTemplateId} onValueChange={selectTemplate}>
+              <SelectTrigger><SelectValue placeholder="בחר תבנית" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="__default__">תבנית ברירת מחדל</SelectItem>
-                {trainingCategories.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                {defaultTemplates.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">ברירת מחדל</div>
+                    {defaultTemplates.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </>
+                )}
+                {templatesByCategory.map(({ category, templates: catTemplates }) => (
+                  catTemplates.length > 0 ? (
+                    <div key={category.id}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{category.name}</div>
+                      {catTemplates.map(t => (
+                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                      ))}
+                    </div>
+                  ) : null
                 ))}
               </SelectContent>
             </Select>
-            <div className="space-y-2">
-              <Label>שם התבנית</Label>
-              <Input value={form.name} onChange={e => updateField('name', e.target.value)} placeholder="לדוגמה: תבנית עבודה בגובה" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>שם התבנית</Label>
+                <Input value={form.name} onChange={e => updateField('name', e.target.value)} placeholder="לדוגמה: תבנית עבודה בגובה" />
+              </div>
+              <div className="space-y-2">
+                <Label>קטגוריה</Label>
+                <Select value={form.categoryId || '__default__'} onValueChange={v => updateField('categoryId', v === '__default__' ? '' : v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__default__">ברירת מחדל (כללי)</SelectItem>
+                    {trainingCategories.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -204,10 +247,16 @@ const CertificateTemplateEditor = () => {
           </Card>
         )}
 
-        <Button onClick={handleSave} className="w-full gap-2">
-          <Save className="h-4 w-4" />
-          שמור תבנית
-        </Button>
+        <div className="flex gap-3">
+          <Button onClick={handleSave} className="flex-1 gap-2">
+            <Save className="h-4 w-4" />
+            שמור תבנית
+          </Button>
+          <Button onClick={handleSaveAsNew} variant="outline" className="gap-2">
+            <Copy className="h-4 w-4" />
+            שמור כתבנית חדשה
+          </Button>
+        </div>
       </div>
 
       {/* Preview Panel */}
