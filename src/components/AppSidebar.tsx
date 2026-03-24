@@ -6,6 +6,7 @@ import {
   BookOpen,
   Award,
   ClipboardCheck,
+  CreditCard,
   Shield,
   Settings,
 } from "lucide-react";
