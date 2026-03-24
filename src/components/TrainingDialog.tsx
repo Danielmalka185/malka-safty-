@@ -38,10 +38,11 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
       setSelectedTypeIds(training.trainingTypeIds); setSelectedParticipantIds(training.participantIds);
       setDate(training.date); setLocation(training.location); setInstructor(training.instructor);
       setTrainingKind(training.trainingKind || 'new');
+      setTemplateId(training.templateId || '');
       setPricingType(training.pricingType); setBasePrice(training.basePrice); setDiscountPercent(training.discountPercent);
     } else {
       setCompanyId(''); setCategoryId(''); setSelectedTypeIds([]); setSelectedParticipantIds([]);
-      setDate(''); setLocation(''); setInstructor(''); setTrainingKind('new');
+      setDate(''); setLocation(''); setInstructor(''); setTrainingKind('new'); setTemplateId('');
       setPricingType('per_person'); setBasePrice(0); setDiscountPercent(0);
     }
   }, [training, open]);
