@@ -40,7 +40,7 @@ const Dashboard = () => {
       const empName = getEmployeeName(cert.employeeId);
       const compName = getCompanyName(cert.companyId);
       const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join(' | ');
-      return `"${empName}","${compName}","${typeNames}","${cert.expiryDate}"`;
+      return `"${empName}","${compName}","${typeNames}","${formatDateHe(cert.expiryDate)}"`;
     }).join('\n');
     const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
