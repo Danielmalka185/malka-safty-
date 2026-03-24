@@ -102,7 +102,7 @@ export function CompanyCard({ company, open, onOpenChange, onEdit }: CompanyCard
                   <p className="text-xs text-muted-foreground">{t.location} • {t.instructor}</p>
                 </div>
                 <div className="text-left">
-                  <p className="text-sm">{t.date}</p>
+                  <p className="text-sm">{formatDateHe(t.date)}</p>
                   <p className="text-xs text-muted-foreground">{t.participantIds.length} משתתפים</p>
                 </div>
               </div>
