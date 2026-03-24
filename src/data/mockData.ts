@@ -106,6 +106,22 @@ export interface CertificateTemplate {
   imageFields?: ImageField[];
 }
 
+export interface Billing {
+  id: string;
+  trainingId: string;
+  companyId: string;
+  amount: number;
+  status: 'pending' | 'paid';
+  dueDate: string;
+  paidDate?: string;
+  notes: string;
+}
+
+export interface EmailTemplate {
+  subject: string;
+  body: string;
+}
+
 export interface RiskSurvey {
   id: string;
   siteName: string;

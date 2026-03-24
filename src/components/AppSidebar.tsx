@@ -32,6 +32,7 @@ const menuItems = [
   { title: "הדרכות", url: "/trainings", icon: GraduationCap },
   { title: "תעודות", url: "/certificates", icon: Award },
   { title: "סקרי סיכונים", url: "/risk-surveys", icon: ClipboardCheck },
+  { title: "חיובים", url: "/billings", icon: CreditCard },
   { title: "הגדרות", url: "/settings", icon: Settings },
 ];
 
