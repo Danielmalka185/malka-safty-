@@ -111,6 +111,19 @@ const TrainingDialog = ({ open, onOpenChange, training, onSave }: TrainingDialog
               </div>
             </div>
           )}
+          {categoryId && categoryTemplates.length > 0 && (
+            <div className="space-y-2">
+              <Label>תבנית תעודה</Label>
+              <Select value={templateId} onValueChange={setTemplateId}>
+                <SelectTrigger><SelectValue placeholder="תבנית ברירת מחדל" /></SelectTrigger>
+                <SelectContent>
+                  {categoryTemplates.map(t => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {companyId && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
