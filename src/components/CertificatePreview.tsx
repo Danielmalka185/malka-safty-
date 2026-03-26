@@ -32,6 +32,7 @@ const defaultData: Record<string, string> = {
   companyPhone: '03-1234567',
   companyAddress: 'רחוב ראשי 1',
   trainingKind: 'חדש',
+  certificateNumber: '1001',
 };
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {

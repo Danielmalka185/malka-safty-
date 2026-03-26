@@ -37,6 +37,9 @@ const availableFields = [
     { key: 'date', label: 'תאריך' },
     { key: 'expiryDate', label: 'תאריך תפוגה' },
   ]},
+  { group: 'תעודה', fields: [
+    { key: 'certificateNumber', label: 'מספר תעודה' },
+  ]},
 ];
 
 const allFields = availableFields.flatMap(g => g.fields);
