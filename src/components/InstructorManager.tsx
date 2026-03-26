@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, Upload } from "lucide-react";
 import { useData } from "@/context/DataContext";
 import type { Instructor } from "@/data/mockData";
 import { toast } from "sonner";
@@ -18,13 +18,16 @@ const InstructorManager = () => {
   const [name, setName] = useState("");
   const [idNumber, setIdNumber] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
   const [certificateExpiry, setCertificateExpiry] = useState("");
+  const [signatureImage, setSignatureImage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openNew = () => {
     setEditing(null);
-    setName(""); setIdNumber(""); setPhone(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
+    setName(""); setIdNumber(""); setPhone(""); setAddress(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry(""); setSignatureImage("");
     setDialogOpen(true);
   };
 
@@ -33,19 +36,30 @@ const InstructorManager = () => {
     setName(inst.name);
     setIdNumber(inst.idNumber);
     setPhone(inst.phone);
+    setAddress(inst.address);
     setYearsOfExperience(String(inst.yearsOfExperience));
     setCertificateNumber(inst.certificateNumber);
     setCertificateExpiry(inst.certificateExpiry);
+    setSignatureImage(inst.signatureImage || "");
     setDialogOpen(true);
+  };
+
+  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => setSignatureImage(reader.result as string);
+    reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
+    const data = { name, idNumber, phone, address, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry, signatureImage: signatureImage || undefined };
     if (editing) {
-      updateInstructor({ ...editing, name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      updateInstructor({ ...editing, ...data });
       toast.success("המדריך עודכן");
     } else {
-      addInstructor({ name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      addInstructor(data as Omit<Instructor, 'id'>);
       toast.success("מדריך נוסף");
     }
     setDialogOpen(false);
@@ -72,16 +86,18 @@ const InstructorManager = () => {
               <TableHead>שם</TableHead>
               <TableHead>ת.ז.</TableHead>
               <TableHead>טלפון</TableHead>
+              <TableHead>כתובת</TableHead>
               <TableHead>שנות ותק</TableHead>
               <TableHead>מספר תעודה</TableHead>
               <TableHead>תוקף תעודה</TableHead>
+              <TableHead>חתימה</TableHead>
               <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {instructors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                   אין מדריכים. הוסף מדריך חדש כדי להתחיל.
                 </TableCell>
               </TableRow>
@@ -91,9 +107,11 @@ const InstructorManager = () => {
                   <TableCell className="font-medium">{inst.name}</TableCell>
                   <TableCell>{inst.idNumber}</TableCell>
                   <TableCell>{inst.phone}</TableCell>
+                  <TableCell>{inst.address}</TableCell>
                   <TableCell>{inst.yearsOfExperience}</TableCell>
                   <TableCell>{inst.certificateNumber}</TableCell>
                   <TableCell>{inst.certificateExpiry ? formatDateHe(inst.certificateExpiry) : '—'}</TableCell>
+                  <TableCell>{inst.signatureImage ? <Check className="h-4 w-4 text-green-600" /> : '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(inst)}>
@@ -116,7 +134,7 @@ const InstructorManager = () => {
           <DialogHeader>
             <DialogTitle>{editing ? 'עריכת מדריך' : 'מדריך חדש'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
             <div className="space-y-2">
               <Label>שם *</Label>
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="שם המדריך" />
@@ -130,6 +148,10 @@ const InstructorManager = () => {
               <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="מספר טלפון" />
             </div>
             <div className="space-y-2">
+              <Label>כתובת</Label>
+              <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="כתובת המדריך" />
+            </div>
+            <div className="space-y-2">
               <Label>שנות ותק</Label>
               <Input type="number" value={yearsOfExperience} onChange={e => setYearsOfExperience(e.target.value)} placeholder="מספר שנות ותק" />
             </div>
@@ -140,6 +162,26 @@ const InstructorManager = () => {
             <div className="space-y-2">
               <Label>תוקף תעודה</Label>
               <Input type="date" value={certificateExpiry} onChange={e => setCertificateExpiry(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>חתימת מדריך</Label>
+              <div className="flex items-center gap-3">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  העלה חתימה
+                </Button>
+                {signatureImage && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setSignatureImage("")} className="text-destructive">
+                    הסר
+                  </Button>
+                )}
+              </div>
+              {signatureImage && (
+                <div className="border rounded p-2 bg-white">
+                  <img src={signatureImage} alt="חתימה" className="h-16 object-contain" />
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter className="gap-2">

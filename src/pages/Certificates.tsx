@@ -17,7 +17,7 @@ const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פ
 const statusVariants: Record<string, 'default' | 'destructive' | 'secondary' | 'outline'> = { valid: 'default', expired: 'destructive', expiring_soon: 'outline' };
 
 const Certificates = () => {
-  const { certificates, companies, trainings, templates, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee, getCategoryName, getTemplateForCategory } = useData();
+  const { certificates, companies, trainings, templates, instructors, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee, getCategoryName, getTemplateForCategory } = useData();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
@@ -72,6 +72,18 @@ const Certificates = () => {
       phone: emp?.phone || '',
       address: emp?.address || '',
       trainingKind: cert.trainingKind === 'renewal' ? 'ריענון' : 'חדש',
+      ...((() => {
+        const inst = instructors.find(i => i.name === training?.instructor);
+        return inst ? {
+          instructorPhone: inst.phone,
+          instructorId: inst.idNumber,
+          instructorAddress: inst.address,
+          instructorExperience: String(inst.yearsOfExperience),
+          instructorCertNumber: inst.certificateNumber,
+          instructorCertExpiry: inst.certificateExpiry ? formatDateHe(inst.certificateExpiry) : '',
+          instructorSignature: inst.signatureImage || '',
+        } : {};
+      })()),
     };
   };
 
