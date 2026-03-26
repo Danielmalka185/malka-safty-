@@ -52,6 +52,7 @@ const Certificates = () => {
     const typeNames = cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join('\n');
     const company = companies.find(c => c.id === cert.companyId);
     return {
+      certificateNumber: cert.certificateNumber || '',
       employeeName: getEmployeeName(cert.employeeId),
       firstName: emp?.firstName || '',
       lastName: emp?.lastName || '',
@@ -124,6 +125,7 @@ const Certificates = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>מס׳ תעודה</TableHead>
                 <TableHead>עובד</TableHead>
                 <TableHead>חברה</TableHead>
                 <TableHead>נושאי הדרכה</TableHead>
@@ -135,10 +137,11 @@ const Certificates = () => {
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">לא נמצאו תעודות</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">לא נמצאו תעודות</TableCell></TableRow>
               ) : (
                 filtered.map((cert) => (
                   <TableRow key={cert.id}>
+                    <TableCell className="font-mono text-sm">{cert.certificateNumber || '—'}</TableCell>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2"><Award className="h-4 w-4 text-muted-foreground shrink-0" />{getEmployeeName(cert.employeeId)}</div>
                     </TableCell>

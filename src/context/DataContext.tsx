@@ -58,6 +58,7 @@ export function useData(): DataContextType {
 }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
+  const certCounterRef = React.useRef(1000);
   const [companies, setCompanies] = useState<Company[]>([...initCompanies]);
   const [employees, setEmployees] = useState<Employee[]>([...initEmployees]);
   const [trainings, setTrainings] = useState<Training[]>([...initTrainings]);
@@ -134,18 +135,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (expiry < now) status = 'expired';
     else if (expiry <= threeMonths) status = 'expiring_soon';
 
-    const newCerts: Certificate[] = training.participantIds.map(participantId => ({
-      id: `cert${Date.now()}-${participantId}`,
-      employeeId: participantId,
-      companyId: training.companyId,
-      trainingTypeIds: certTypeIds,
-      trainingKind: training.trainingKind || 'new',
-      templateId: training.templateId,
-      trainingId: training.id,
-      issueDate,
-      expiryDate,
-      status,
-    }));
+    const newCerts: Certificate[] = training.participantIds.map(participantId => {
+      certCounterRef.current += 1;
+      return {
+        id: `cert${Date.now()}-${participantId}`,
+        certificateNumber: String(certCounterRef.current),
+        employeeId: participantId,
+        companyId: training.companyId,
+        trainingTypeIds: certTypeIds,
+        trainingKind: training.trainingKind || 'new',
+        templateId: training.templateId,
+        trainingId: training.id,
+        issueDate,
+        expiryDate,
+        status,
+      };
+    });
 
     setCertificates(prev => [...prev, ...newCerts]);
   }, []);
