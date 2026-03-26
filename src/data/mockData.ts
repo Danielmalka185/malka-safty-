@@ -86,9 +86,11 @@ export interface Instructor {
   name: string;
   idNumber: string;
   phone: string;
+  address: string;
   yearsOfExperience: number;
   certificateNumber: string;
   certificateExpiry: string;
+  signatureImage?: string;
 }
 
 export interface CertificateTemplate {

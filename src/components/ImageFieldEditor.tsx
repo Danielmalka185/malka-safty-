@@ -29,6 +29,11 @@ const availableFields = [
     { key: 'instructor', label: 'שם מדריך' },
     { key: 'instructorPhone', label: 'טלפון מדריך' },
     { key: 'instructorId', label: 'ת"ז מדריך' },
+    { key: 'instructorAddress', label: 'כתובת מדריך' },
+    { key: 'instructorExperience', label: 'שנות ותק מדריך' },
+    { key: 'instructorCertNumber', label: 'מספר תעודת מדריך' },
+    { key: 'instructorCertExpiry', label: 'תוקף תעודת מדריך' },
+    { key: 'instructorSignature', label: 'חתימת מדריך' },
   ]},
   { group: 'הדרכה', fields: [
     { key: 'trainingType', label: 'נושאי הדרכה' },
