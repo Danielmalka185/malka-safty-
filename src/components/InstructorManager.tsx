@@ -42,10 +42,10 @@ const InstructorManager = () => {
   const handleSave = () => {
     if (!name.trim()) return;
     if (editing) {
-      updateInstructor({ ...editing, name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      updateInstructor({ ...editing, name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("המדריך עודכן");
     } else {
-      addInstructor({ name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      addInstructor({ name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("מדריך נוסף");
     }
     setDialogOpen(false);
