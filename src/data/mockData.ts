@@ -114,13 +114,14 @@ export interface CertificateTemplate {
 
 export interface Billing {
   id: string;
-  trainingId: string;
+  trainingId?: string;
   companyId: string;
   amount: number;
   status: 'pending' | 'paid';
   dueDate: string;
   paidDate?: string;
   notes: string;
+  description?: string;
 }
 
 export interface EmailTemplate {
