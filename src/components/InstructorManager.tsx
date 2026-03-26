@@ -118,6 +118,14 @@ const InstructorManager = () => {
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="שם המדריך" />
             </div>
             <div className="space-y-2">
+              <Label>תעודת זהות</Label>
+              <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="מספר תעודת זהות" />
+            </div>
+            <div className="space-y-2">
+              <Label>טלפון</Label>
+              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="מספר טלפון" />
+            </div>
+            <div className="space-y-2">
               <Label>שנות ותק</Label>
               <Input type="number" value={yearsOfExperience} onChange={e => setYearsOfExperience(e.target.value)} placeholder="מספר שנות ותק" />
             </div>
