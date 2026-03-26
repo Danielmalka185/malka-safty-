@@ -60,6 +60,7 @@ export interface Training {
 
 export interface Certificate {
   id: string;
+  certificateNumber: string;
   employeeId: string;
   companyId: string;
   trainingTypeIds: string[];
