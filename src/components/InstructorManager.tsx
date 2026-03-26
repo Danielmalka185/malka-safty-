@@ -70,6 +70,8 @@ const InstructorManager = () => {
           <TableHeader>
             <TableRow>
               <TableHead>שם</TableHead>
+              <TableHead>ת.ז.</TableHead>
+              <TableHead>טלפון</TableHead>
               <TableHead>שנות ותק</TableHead>
               <TableHead>מספר תעודה</TableHead>
               <TableHead>תוקף תעודה</TableHead>
@@ -79,7 +81,7 @@ const InstructorManager = () => {
           <TableBody>
             {instructors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   אין מדריכים. הוסף מדריך חדש כדי להתחיל.
                 </TableCell>
               </TableRow>
@@ -87,6 +89,8 @@ const InstructorManager = () => {
               instructors.map(inst => (
                 <TableRow key={inst.id}>
                   <TableCell className="font-medium">{inst.name}</TableCell>
+                  <TableCell>{inst.idNumber}</TableCell>
+                  <TableCell>{inst.phone}</TableCell>
                   <TableCell>{inst.yearsOfExperience}</TableCell>
                   <TableCell>{inst.certificateNumber}</TableCell>
                   <TableCell>{inst.certificateExpiry ? formatDateHe(inst.certificateExpiry) : '—'}</TableCell>
