@@ -16,19 +16,23 @@ const InstructorManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Instructor | null>(null);
   const [name, setName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
   const [certificateExpiry, setCertificateExpiry] = useState("");
 
   const openNew = () => {
     setEditing(null);
-    setName(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
+    setName(""); setIdNumber(""); setPhone(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
     setDialogOpen(true);
   };
 
   const openEdit = (inst: Instructor) => {
     setEditing(inst);
     setName(inst.name);
+    setIdNumber(inst.idNumber);
+    setPhone(inst.phone);
     setYearsOfExperience(String(inst.yearsOfExperience));
     setCertificateNumber(inst.certificateNumber);
     setCertificateExpiry(inst.certificateExpiry);
@@ -38,10 +42,10 @@ const InstructorManager = () => {
   const handleSave = () => {
     if (!name.trim()) return;
     if (editing) {
-      updateInstructor({ ...editing, name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      updateInstructor({ ...editing, name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("המדריך עודכן");
     } else {
-      addInstructor({ name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
+      addInstructor({ name, idNumber, phone, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("מדריך נוסף");
     }
     setDialogOpen(false);
@@ -66,6 +70,8 @@ const InstructorManager = () => {
           <TableHeader>
             <TableRow>
               <TableHead>שם</TableHead>
+              <TableHead>ת.ז.</TableHead>
+              <TableHead>טלפון</TableHead>
               <TableHead>שנות ותק</TableHead>
               <TableHead>מספר תעודה</TableHead>
               <TableHead>תוקף תעודה</TableHead>
@@ -75,7 +81,7 @@ const InstructorManager = () => {
           <TableBody>
             {instructors.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   אין מדריכים. הוסף מדריך חדש כדי להתחיל.
                 </TableCell>
               </TableRow>
@@ -83,6 +89,8 @@ const InstructorManager = () => {
               instructors.map(inst => (
                 <TableRow key={inst.id}>
                   <TableCell className="font-medium">{inst.name}</TableCell>
+                  <TableCell>{inst.idNumber}</TableCell>
+                  <TableCell>{inst.phone}</TableCell>
                   <TableCell>{inst.yearsOfExperience}</TableCell>
                   <TableCell>{inst.certificateNumber}</TableCell>
                   <TableCell>{inst.certificateExpiry ? formatDateHe(inst.certificateExpiry) : '—'}</TableCell>
@@ -112,6 +120,14 @@ const InstructorManager = () => {
             <div className="space-y-2">
               <Label>שם *</Label>
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="שם המדריך" />
+            </div>
+            <div className="space-y-2">
+              <Label>תעודת זהות</Label>
+              <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="מספר תעודת זהות" />
+            </div>
+            <div className="space-y-2">
+              <Label>טלפון</Label>
+              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="מספר טלפון" />
             </div>
             <div className="space-y-2">
               <Label>שנות ותק</Label>
