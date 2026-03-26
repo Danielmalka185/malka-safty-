@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GraduationCap, Plus, Search, Eye, Pencil } from "lucide-react";
+import { GraduationCap, Plus, Search, Eye, Pencil, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -14,16 +14,29 @@ import {
 import { formatDateHe } from "@/lib/utils";
 import { useData } from "@/context/DataContext";
 import TrainingDialog from "@/components/TrainingDialog";
+import { useToast } from "@/hooks/use-toast";
 
 
 const Trainings = () => {
-  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining, getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName } = useData();
+  const { trainings: allTrainings, companies, addTraining, updateTraining, addCertificatesForTraining, getCategoryName, getCompanyName, getTrainingTypeName, getEmployeeName, getEmployee } = useData();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [filterCompany, setFilterCompany] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTraining, setEditingTraining] = useState<Training | null>(null);
   const [viewTraining, setViewTraining] = useState<Training | null>(null);
+
+  const handleSendMailAll = (training: Training) => {
+    const participants = training.participantIds.map(id => getEmployee(id));
+    const withEmail = participants.filter(p => p?.email);
+    const total = participants.length;
+    if (withEmail.length === 0) {
+      toast({ title: "שגיאה", description: "אין משתתפים עם כתובת מייל", variant: "destructive" });
+      return;
+    }
+    toast({ title: "מיילים נשלחו (סימולציה)", description: `נשלח ל-${withEmail.length} מתוך ${total} משתתפים` });
+  };
 
   const filtered = allTrainings.filter(t => {
     const matchSearch =
@@ -98,7 +111,7 @@ const Trainings = () => {
                 <TableHead className="hidden md:table-cell">מחיר</TableHead>
                 <TableHead className="hidden lg:table-cell">מדריך</TableHead>
                 <TableHead>משתתפים</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
+                <TableHead className="w-[90px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -130,9 +143,14 @@ const Trainings = () => {
                       <Badge variant="secondary">{training.participantIds.length}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setViewTraining(training); }}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setViewTraining(training); }}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleSendMailAll(training); }} title="שלח מייל לכל המשתתפים">
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

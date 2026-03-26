@@ -18,7 +18,7 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
   const { companies } = useData();
   const [form, setForm] = useState({
     firstName: '', lastName: '', fatherName: '', idNumber: '',
-    birthYear: '', profession: '', address: '', phone: '',
+    birthYear: '', profession: '', address: '', phone: '', email: '',
     companyId: '', status: 'active' as 'active' | 'inactive',
   });
 
@@ -28,17 +28,17 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
         firstName: employee.firstName, lastName: employee.lastName,
         fatherName: employee.fatherName, idNumber: employee.idNumber,
         birthYear: String(employee.birthYear), profession: employee.profession,
-        address: employee.address, phone: employee.phone,
+        address: employee.address, phone: employee.phone, email: employee.email || '',
         companyId: employee.companyId, status: employee.status,
       });
     } else {
-      setForm({ firstName: '', lastName: '', fatherName: '', idNumber: '', birthYear: '', profession: '', address: '', phone: '', companyId: '', status: 'active' });
+      setForm({ firstName: '', lastName: '', fatherName: '', idNumber: '', birthYear: '', profession: '', address: '', phone: '', email: '', companyId: '', status: 'active' });
     }
   }, [employee, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ ...form, birthYear: Number(form.birthYear), ...(employee ? { id: employee.id } : {}) });
+    onSave({ ...form, birthYear: Number(form.birthYear), email: form.email || undefined, ...(employee ? { id: employee.id } : {}) });
     onOpenChange(false);
   };
 
@@ -79,6 +79,10 @@ export function EmployeeDialog({ open, onOpenChange, employee, onSave }: Employe
             <div className="space-y-2">
               <Label htmlFor="phone">טלפון *</Label>
               <Input id="phone" type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} required placeholder="050-0000000" dir="ltr" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">אימייל</Label>
+              <Input id="email" type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="email@example.com" dir="ltr" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">סטטוס</Label>

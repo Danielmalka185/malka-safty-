@@ -22,6 +22,7 @@ export interface Employee {
   profession: string;
   address: string;
   phone: string;
+  email?: string;
   companyId: string;
   status: 'active' | 'inactive';
 }
