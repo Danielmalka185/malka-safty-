@@ -1,58 +1,22 @@
 
 
-# הוספת כתובת + חתימת מדריך + פרטים מלאים בתעודה + קישור חתימת עובד
+# הוספת שדה חתימת עובד לתבנית התעודה
 
-## סיכום
-1. **שדה כתובת למדריך** — הוספת `address` ל-Instructor
-2. **העלאת תמונת חתימה למדריך** — שדה `signatureImage` (base64) עם אפשרות העלאה בטופס
-3. **כל פרטי המדריך זמינים בתבנית תעודה** — כתובת, שנות ותק, מספר תעודה, תוקף תעודה
-4. **שדה חתימת מדריך כתמונה על התעודה** — שדה מיוחד `instructorSignature` שמציג תמונה (לא טקסט) על התעודה
-5. **קישור חתימת עובד במייל** — דורש backend (Lovable Cloud), נכין את ה-UI עכשיו כסימולציה
+## הבעיה
+אין כרגע שדה `employeeSignature` בתבנית — המערכת לא יודעת איפה על התעודה העובד צריך לחתום.
 
----
+## הפתרון
+בדיוק כמו `instructorSignature`, צריך שדה `employeeSignature` שאפשר למקם על תבנית התעודה. כשהעובד חותם (בעתיד דרך קישור במייל), החתימה תוצג במיקום שסימנת.
 
-## שינויים טכניים
+## שינויים
 
-### 1. `src/data/mockData.ts`
-- הוספת `address: string` ו-`signatureImage?: string` ל-interface `Instructor`
+### 1. `src/components/ImageFieldEditor.tsx`
+- הוספת שדה `employeeSignature` (חתימת עובד) לקבוצת "עובד"
 
-### 2. `src/components/InstructorManager.tsx`
-- שדה כתובת בטופס
-- כפתור העלאת תמונת חתימה (file input → base64) עם תצוגה מקדימה
-- עמודה "חתימה" בטבלה (אייקון ✓ אם קיימת)
-
-### 3. `src/components/ImageFieldEditor.tsx`
-- הוספת שדות מדריך חדשים לקבוצת "מדריך":
-  - `instructorAddress` (כתובת מדריך)
-  - `instructorExperience` (שנות ותק)
-  - `instructorCertNumber` (מספר תעודת מדריך)
-  - `instructorCertExpiry` (תוקף תעודת מדריך)
-  - `instructorSignature` (חתימת מדריך — סוג מיוחד: תמונה)
-
-### 4. `src/components/CertificatePreview.tsx`
-- ב-`resolveFieldValue`: אם השדה הוא `instructorSignature`, מחזיר URL של תמונה
-- ב-render של שדות תמונה: אם הערך מתחיל ב-`data:image`, מציג `<img>` במקום טקסט
-- הוספת ערכי ברירת מחדל לשדות החדשים ב-`defaultData`
-
-### 5. `src/pages/Certificates.tsx`
-- העברת כל פרטי המדריך ל-`getCertData` (כתובת, ותק, תעודה, תוקף, חתימה)
-
-### 6. קישור חתימת עובד (סימולציה בלבד)
-- בעמוד תעודות, כפתור "שלח לחתימה" — מציג toast "נשלח קישור חתימה ל-..." (דורש Lovable Cloud לעבודה אמיתית)
-
----
-
-| # | קובץ | שינוי |
-|---|---|---|
-| 1 | `mockData.ts` | `address` + `signatureImage` ב-Instructor |
-| 2 | `InstructorManager.tsx` | שדות כתובת + העלאת חתימה |
-| 3 | `ImageFieldEditor.tsx` | שדות מדריך חדשים כולל חתימה |
-| 4 | `CertificatePreview.tsx` | רינדור חתימה כתמונה + ברירות מחדל |
-| 5 | `Certificates.tsx` | העברת פרטי מדריך מלאים + כפתור "שלח לחתימה" |
+### 2. `src/components/CertificatePreview.tsx`
+- טיפול ב-`employeeSignature` כמו `instructorSignature` — אם יש תמונת חתימה, מציג `<img>`, אחרת מציג placeholder ריק או טקסט "ממתין לחתימה"
+- הוספת ערך ברירת מחדל ב-`defaultData`
 
 ## תוצאה
-- מדריך עם כל הפרטים + חתימה מצולמת
-- חתימת המדריך מודבקת על התעודה כתמונה
-- כל פרטי המדריך זמינים כשדות בתבנית
-- כפתור "שלח לחתימה" מוכן (סימולציה — חיבור אמיתי בהמשך עם Lovable Cloud)
+תוכל לגרור את שדה "חתימת עובד" למקום הרצוי על תבנית התעודה, בדיוק כמו שאתה עושה עם חתימת המדריך. כשהעובד יחתום בעתיד (דרך הקישור במייל), החתימה תופיע שם.
 
