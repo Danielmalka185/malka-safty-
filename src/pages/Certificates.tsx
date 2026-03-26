@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Award, Search, Download, Building2, Eye } from "lucide-react";
+import { Award, Search, Download, Building2, Eye, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import CertificatePreview, { downloadCertificatePdf } from "@/components/CertificatePreview";
 import { useData } from "@/context/DataContext";
 import { formatDateHe } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import type { Certificate } from "@/data/mockData";
 
 const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פג תוקף', expiring_soon: 'עומד לפוג' };
@@ -17,10 +18,20 @@ const statusVariants: Record<string, 'default' | 'destructive' | 'secondary' | '
 
 const Certificates = () => {
   const { certificates, companies, trainings, templates, getEmployeeName, getCompanyName, getTrainingTypeName, getEmployee, getCategoryName, getTemplateForCategory } = useData();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
+
+  const handleSendMail = (cert: Certificate) => {
+    const emp = getEmployee(cert.employeeId);
+    if (!emp?.email) {
+      toast({ title: "שגיאה", description: "לעובד אין כתובת מייל", variant: "destructive" });
+      return;
+    }
+    toast({ title: "המייל נשלח", description: `נשלח בהצלחה ל-${emp.email} (סימולציה)` });
+  };
 
   const getTypeNames = (cert: Certificate): string => {
     return cert.trainingTypeIds.map(id => getTrainingTypeName(id)).join(', ');
@@ -147,6 +158,7 @@ const Certificates = () => {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewCert(cert)}><Eye className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleSendMail(cert)}><Mail className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(cert)}><Download className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
