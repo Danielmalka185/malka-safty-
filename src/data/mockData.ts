@@ -83,9 +83,9 @@ export interface ImageField {
 export interface Instructor {
   id: string;
   name: string;
-  phone: string;
-  idNumber: string;
-  expertise: string;
+  yearsOfExperience: number;
+  certificateNumber: string;
+  certificateExpiry: string;
 }
 
 export interface CertificateTemplate {

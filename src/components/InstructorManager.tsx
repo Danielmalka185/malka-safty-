@@ -9,35 +9,39 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useData } from "@/context/DataContext";
 import type { Instructor } from "@/data/mockData";
 import { toast } from "sonner";
+import { formatDateHe } from "@/lib/utils";
 
 const InstructorManager = () => {
   const { instructors, addInstructor, updateInstructor, deleteInstructor } = useData();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Instructor | null>(null);
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [idNumber, setIdNumber] = useState("");
-  const [expertise, setExpertise] = useState("");
+  const [yearsOfExperience, setYearsOfExperience] = useState("");
+  const [certificateNumber, setCertificateNumber] = useState("");
+  const [certificateExpiry, setCertificateExpiry] = useState("");
 
   const openNew = () => {
     setEditing(null);
-    setName(""); setPhone(""); setIdNumber(""); setExpertise("");
+    setName(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
     setDialogOpen(true);
   };
 
   const openEdit = (inst: Instructor) => {
     setEditing(inst);
-    setName(inst.name); setPhone(inst.phone); setIdNumber(inst.idNumber); setExpertise(inst.expertise);
+    setName(inst.name);
+    setYearsOfExperience(String(inst.yearsOfExperience));
+    setCertificateNumber(inst.certificateNumber);
+    setCertificateExpiry(inst.certificateExpiry);
     setDialogOpen(true);
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
     if (editing) {
-      updateInstructor({ ...editing, name, phone, idNumber, expertise });
+      updateInstructor({ ...editing, name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("המדריך עודכן");
     } else {
-      addInstructor({ name, phone, idNumber, expertise });
+      addInstructor({ name, yearsOfExperience: Number(yearsOfExperience) || 0, certificateNumber, certificateExpiry });
       toast.success("מדריך נוסף");
     }
     setDialogOpen(false);
@@ -62,9 +66,9 @@ const InstructorManager = () => {
           <TableHeader>
             <TableRow>
               <TableHead>שם</TableHead>
-              <TableHead>טלפון</TableHead>
-              <TableHead>ת"ז</TableHead>
-              <TableHead>מומחיות</TableHead>
+              <TableHead>שנות ותק</TableHead>
+              <TableHead>מספר תעודה</TableHead>
+              <TableHead>תוקף תעודה</TableHead>
               <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
@@ -79,9 +83,9 @@ const InstructorManager = () => {
               instructors.map(inst => (
                 <TableRow key={inst.id}>
                   <TableCell className="font-medium">{inst.name}</TableCell>
-                  <TableCell>{inst.phone}</TableCell>
-                  <TableCell>{inst.idNumber}</TableCell>
-                  <TableCell>{inst.expertise}</TableCell>
+                  <TableCell>{inst.yearsOfExperience}</TableCell>
+                  <TableCell>{inst.certificateNumber}</TableCell>
+                  <TableCell>{inst.certificateExpiry ? formatDateHe(inst.certificateExpiry) : '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(inst)}>
@@ -110,16 +114,16 @@ const InstructorManager = () => {
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="שם המדריך" />
             </div>
             <div className="space-y-2">
-              <Label>טלפון</Label>
-              <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="050-0000000" />
+              <Label>שנות ותק</Label>
+              <Input type="number" value={yearsOfExperience} onChange={e => setYearsOfExperience(e.target.value)} placeholder="מספר שנות ותק" />
             </div>
             <div className="space-y-2">
-              <Label>תעודת זהות</Label>
-              <Input value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="ת.ז." />
+              <Label>מספר תעודה</Label>
+              <Input value={certificateNumber} onChange={e => setCertificateNumber(e.target.value)} placeholder="מספר תעודת מדריך" />
             </div>
             <div className="space-y-2">
-              <Label>מומחיות</Label>
-              <Input value={expertise} onChange={e => setExpertise(e.target.value)} placeholder="לדוגמה: עבודה בגובה, בטיחות אש" />
+              <Label>תוקף תעודה</Label>
+              <Input type="date" value={certificateExpiry} onChange={e => setCertificateExpiry(e.target.value)} />
             </div>
           </div>
           <DialogFooter className="gap-2">
