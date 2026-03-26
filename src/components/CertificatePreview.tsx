@@ -33,6 +33,11 @@ const defaultData: Record<string, string> = {
   companyAddress: 'רחוב ראשי 1',
   trainingKind: 'חדש',
   certificateNumber: '1001',
+  instructorAddress: 'חיפה',
+  instructorExperience: '15',
+  instructorCertNumber: 'M-5678',
+  instructorCertExpiry: '1.1.2027',
+  instructorSignature: '',
 };
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
@@ -87,6 +92,13 @@ export async function downloadCertificatePdf(
         return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;max-width:40%;font-family:'Rubik',sans-serif;">${badges}</div>`;
       }
       
+      // Signature field renders as image
+      if (field.key === 'instructorSignature' || field.key.replace(/_\d+$/, '') === 'instructorSignature') {
+        if (value && value.startsWith('data:image')) {
+          return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;"><img src="${value}" style="height:${field.fontSize * 3}px;object-fit:contain;" /></div>`;
+        }
+        return '';
+      }
       return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize}px;color:${field.color};white-space:pre-line;font-weight:600;font-family:'Rubik',sans-serif;">${value}</div>`;
     }).join('');
 
@@ -220,6 +232,19 @@ const ImagePreview = ({ template, data }: { template: CertificateTemplate; data:
               ))}
             </div>
           );
+        }
+        
+        // Signature field renders as image
+        const isSignature = field.key === 'instructorSignature' || field.key.replace(/_\d+$/, '') === 'instructorSignature';
+        if (isSignature) {
+          if (value && value.startsWith('data:image')) {
+            return (
+              <div key={i} className="absolute" style={{ right: `${100 - field.xPercent}%`, top: `${field.yPercent}%` }}>
+                <img src={value} alt="חתימה" style={{ height: `${field.fontSize * 2}px`, objectFit: 'contain' }} />
+              </div>
+            );
+          }
+          return null;
         }
         
         return (
