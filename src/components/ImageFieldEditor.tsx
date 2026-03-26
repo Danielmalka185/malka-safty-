@@ -18,6 +18,7 @@ const availableFields = [
     { key: 'profession', label: 'מקצוע' },
     { key: 'phone', label: 'טלפון עובד' },
     { key: 'address', label: 'כתובת עובד' },
+    { key: 'employeeSignature', label: 'חתימת עובד' },
   ]},
   { group: 'חברה', fields: [
     { key: 'companyName', label: 'שם חברה' },
