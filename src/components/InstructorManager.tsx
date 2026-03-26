@@ -16,6 +16,8 @@ const InstructorManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Instructor | null>(null);
   const [name, setName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [yearsOfExperience, setYearsOfExperience] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
   const [certificateExpiry, setCertificateExpiry] = useState("");
