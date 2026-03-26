@@ -38,6 +38,7 @@ const defaultData: Record<string, string> = {
   instructorCertNumber: 'M-5678',
   instructorCertExpiry: '1.1.2027',
   instructorSignature: '',
+  employeeSignature: '',
 };
 
 function replacePlaceholders(text: string, data: Record<string, string>): string {
@@ -93,9 +94,13 @@ export async function downloadCertificatePdf(
       }
       
       // Signature field renders as image
-      if (field.key === 'instructorSignature' || field.key.replace(/_\d+$/, '') === 'instructorSignature') {
+      const baseKeyPrint = field.key.replace(/_\d+$/, '');
+      if (baseKeyPrint === 'instructorSignature' || baseKeyPrint === 'employeeSignature') {
         if (value && value.startsWith('data:image')) {
           return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;"><img src="${value}" style="height:${field.fontSize * 3}px;object-fit:contain;" /></div>`;
+        }
+        if (baseKeyPrint === 'employeeSignature') {
+          return `<div style="position:absolute;right:${100 - field.xPercent}%;top:${field.yPercent}%;font-size:${field.fontSize * 0.8}px;color:#999;font-family:'Rubik',sans-serif;">ממתין לחתימה</div>`;
         }
         return '';
       }
@@ -235,12 +240,20 @@ const ImagePreview = ({ template, data }: { template: CertificateTemplate; data:
         }
         
         // Signature field renders as image
-        const isSignature = field.key === 'instructorSignature' || field.key.replace(/_\d+$/, '') === 'instructorSignature';
+        const baseKeyPreview = field.key.replace(/_\d+$/, '');
+        const isSignature = baseKeyPreview === 'instructorSignature' || baseKeyPreview === 'employeeSignature';
         if (isSignature) {
           if (value && value.startsWith('data:image')) {
             return (
               <div key={i} className="absolute" style={{ right: `${100 - field.xPercent}%`, top: `${field.yPercent}%` }}>
                 <img src={value} alt="חתימה" style={{ height: `${field.fontSize * 2}px`, objectFit: 'contain' }} />
+              </div>
+            );
+          }
+          if (baseKeyPreview === 'employeeSignature') {
+            return (
+              <div key={i} className="absolute text-muted-foreground" style={{ right: `${100 - field.xPercent}%`, top: `${field.yPercent}%`, fontSize: `${field.fontSize * 0.5}px` }}>
+                ממתין לחתימה
               </div>
             );
           }
