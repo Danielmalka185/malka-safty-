@@ -24,13 +24,15 @@ const InstructorManager = () => {
 
   const openNew = () => {
     setEditing(null);
-    setName(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
+    setName(""); setIdNumber(""); setPhone(""); setYearsOfExperience(""); setCertificateNumber(""); setCertificateExpiry("");
     setDialogOpen(true);
   };
 
   const openEdit = (inst: Instructor) => {
     setEditing(inst);
     setName(inst.name);
+    setIdNumber(inst.idNumber);
+    setPhone(inst.phone);
     setYearsOfExperience(String(inst.yearsOfExperience));
     setCertificateNumber(inst.certificateNumber);
     setCertificateExpiry(inst.certificateExpiry);
