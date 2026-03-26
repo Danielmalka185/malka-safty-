@@ -1,66 +1,37 @@
 
 
-# הוספת טאב חיובים + הכנת תשתית לשליחת מיילים
+# שליחת מיילים עם תעודות — כפתור ידני
 
-## סיכום
-שני דברים:
-1. **טאב חיובים** — מעקב אחרי חיובים לפי הדרכה (בוצע / לא בוצע), בלי חשבוניות
-2. **טאב תבנית מייל בהגדרות** — הכנת UI לניהול נוסח המייל שנשלח עם תעודות (השליחה בפועל תחובר בהמשך עם Lovable Cloud)
+## המצב
+- לעובדים אין שדה אימייל כרגע
+- אין backend (Supabase) מחובר — אי אפשר לשלוח מיילים בפועל בלי זה
+- יש כבר תבנית מייל בהגדרות (subject + body עם placeholders)
 
----
+## מה נעשה עכשיו (UI מוכן)
 
-## שינויים
+### 1. הוספת שדה `email` לעובד
+- `Employee` interface ב-`mockData.ts` — הוספת `email?: string`
+- `EmployeeDialog.tsx` — שדה אימייל בטופס יצירת/עריכת עובד
 
-### 1. `src/data/mockData.ts` — interface חדש `Billing`
-```typescript
-export interface Billing {
-  id: string;
-  trainingId: string;
-  companyId: string;
-  amount: number;        // סכום סופי (אחרי הנחה)
-  status: 'pending' | 'paid';
-  dueDate: string;
-  paidDate?: string;
-  notes: string;
-}
-```
-+ interface `EmailTemplate` לנוסח מייל (subject, body עם placeholders)
+### 2. כפתור "שלח מייל" בעמוד תעודות
+- ב-`Certificates.tsx` — כפתור אייקון `Mail` ליד כל תעודה בטבלה
+- לחיצה → בודק אם לעובד יש אימייל:
+  - **אין אימייל** → toast שגיאה "לעובד אין כתובת מייל"
+  - **יש אימייל** → toast הצלחה "המייל נשלח ל-..." (כרגע סימולציה בלבד)
+- אפשרות גם לשלוח לכל המשתתפים בהדרכה — כפתור בעמוד ההדרכות
 
-### 2. `src/context/DataContext.tsx` — ניהול חיובים + תבנית מייל
-- State חדש: `billings`, `emailTemplate`
-- פונקציות: `addBilling`, `updateBilling` (שינוי סטטוס ל-paid), `updateEmailTemplate`
-- כשיוצרים הדרכה (`addTraining`) — נוצר חיוב אוטומטי עם הסכום מ-`calculateFinalPrice`
+### 3. כפתור "שלח מייל לכל המשתתפים" בהדרכות
+- ב-`Trainings.tsx` — כפתור Mail ליד כל הדרכה
+- שולח (סימולציה) לכל המשתתפים שיש להם אימייל
+- Toast עם סיכום: "נשלח ל-X מתוך Y משתתפים"
 
-### 3. `src/pages/Billings.tsx` — עמוד חיובים חדש
-- טבלה עם: חברה, הדרכה, סכום, סטטוס (ממתין/שולם), תאריך
-- Badge צבעוני לסטטוס
-- כפתור "סמן כשולם" שמעדכן סטטוס + תאריך תשלום
-- חיפוש וסינון לפי חברה וסטטוס
-- סיכום: סה"כ ממתין / סה"כ שולם
-
-### 4. `src/pages/Settings.tsx` — טאב תבנית מייל
-- טאב שלישי "תבנית מייל" עם אייקון Mail
-- עורך פשוט: שדה נושא (subject) + textarea לגוף המייל
-- Placeholders זמינים: `{employeeName}`, `{companyName}`, `{trainingType}`, `{date}`
-- כפתור שמירה
-- (השליחה בפועל תחובר בשלב הבא עם Lovable Cloud)
-
-### 5. `src/components/AppSidebar.tsx` + `src/App.tsx` — ניווט + route
-- הוספת "חיובים" לתפריט עם אייקון `CreditCard`
-- Route חדש: `/billings`
-
----
+## שלב הבא (לא עכשיו)
+כשתרצה לחבר שליחה אמיתית — נפעיל Lovable Cloud, נגדיר דומיין מייל, ונחבר את הכפתורים לשליחה אמיתית.
 
 | # | קובץ | שינוי |
 |---|---|---|
-| 1 | `mockData.ts` | interfaces: Billing, EmailTemplate |
-| 2 | `DataContext.tsx` | state + פונקציות חיובים ומייל |
-| 3 | `Billings.tsx` (חדש) | עמוד מעקב חיובים |
-| 4 | `Settings.tsx` | טאב תבנית מייל |
-| 5 | `AppSidebar.tsx` + `App.tsx` | ניווט ו-route |
-
-## תוצאה
-- מעקב חיובים לכל הדרכה — ממתין/שולם
-- עורך נוסח מייל בהגדרות (מוכן לחיבור שליחה בהמשך)
-- חיוב נוצר אוטומטית עם יצירת הדרכה
+| 1 | `mockData.ts` | `email?: string` ל-Employee |
+| 2 | `EmployeeDialog.tsx` | שדה אימייל בטופס |
+| 3 | `Certificates.tsx` | כפתור "שלח מייל" ליד כל תעודה |
+| 4 | `Trainings.tsx` | כפתור "שלח לכל המשתתפים" ליד כל הדרכה |
 
