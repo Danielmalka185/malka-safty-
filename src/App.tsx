@@ -15,6 +15,7 @@ import RiskSurveys from "./pages/RiskSurveys";
 import Billings from "./pages/Billings";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/billings" element={<Billings />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
