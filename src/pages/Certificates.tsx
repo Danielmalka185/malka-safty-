@@ -11,6 +11,7 @@ import CertificatePreview, { downloadCertificatePdf } from "@/components/Certifi
 import { useData } from "@/context/DataContext";
 import { formatDateHe } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { Certificate } from "@/data/mockData";
 
 const statusLabels: Record<string, string> = { valid: 'בתוקף', expired: 'פג תוקף', expiring_soon: 'עומד לפוג' };
