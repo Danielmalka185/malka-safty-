@@ -24,14 +24,40 @@ const Certificates = () => {
   const [companyFilter, setCompanyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewCert, setViewCert] = useState<Certificate | null>(null);
+  const [sendingCertId, setSendingCertId] = useState<string | null>(null);
 
-  const handleSendMail = (cert: Certificate) => {
+  const handleSendMail = async (cert: Certificate) => {
     const emp = getEmployee(cert.employeeId);
     if (!emp?.email) {
       toast({ title: "שגיאה", description: "לעובד אין כתובת מייל", variant: "destructive" });
       return;
     }
-    toast({ title: "המייל נשלח", description: `נשלח בהצלחה ל-${emp.email} (סימולציה)` });
+    setSendingCertId(cert.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'certificate-notification',
+          recipientEmail: emp.email,
+          idempotencyKey: `cert-notify-${cert.id}`,
+          templateData: {
+            employeeName: getEmployeeName(cert.employeeId),
+            companyName: getCompanyName(cert.companyId),
+            trainingType: getTypeNames(cert),
+            date: formatDateHe(cert.issueDate),
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.success === false) {
+        toast({ title: "לא נשלח", description: "הכתובת חסומה או בוטלה מרשימת התפוצה", variant: "destructive" });
+      } else {
+        toast({ title: "המייל נשלח", description: `נשלח בהצלחה ל-${emp.email}` });
+      }
+    } catch (err: any) {
+      toast({ title: "שגיאה בשליחה", description: err.message || "אירעה שגיאה בשליחת המייל", variant: "destructive" });
+    } finally {
+      setSendingCertId(null);
+    }
   };
 
   const getTypeNames = (cert: Certificate): string => {
