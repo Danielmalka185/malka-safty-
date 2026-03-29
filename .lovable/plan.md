@@ -1,22 +1,33 @@
 
 
-# הוספת שדה חתימת עובד לתבנית התעודה
+# חיבור כפתור שליחת תעודה במייל לתשתית האמיתית
 
-## הבעיה
-אין כרגע שדה `employeeSignature` בתבנית — המערכת לא יודעת איפה על התעודה העובד צריך לחתום.
-
-## הפתרון
-בדיוק כמו `instructorSignature`, צריך שדה `employeeSignature` שאפשר למקם על תבנית התעודה. כשהעובד חותם (בעתיד דרך קישור במייל), החתימה תוצג במיקום שסימנת.
+## מצב נוכחי
+כפתור המייל בטבלת התעודות מציג הודעת "סימולציה" בלבד. תשתית המייל (`send-transactional-email`, דומיין מאומת, תבנית `certificate-notification`) כבר קיימת ומוכנה.
 
 ## שינויים
 
-### 1. `src/components/ImageFieldEditor.tsx`
-- הוספת שדה `employeeSignature` (חתימת עובד) לקבוצת "עובד"
+### 1. `src/pages/Certificates.tsx` — עדכון `handleSendMail`
+- החלפת הסימולציה בקריאה אמיתית ל-Edge Function:
+  ```
+  supabase.functions.invoke('send-transactional-email', {
+    body: {
+      templateName: 'certificate-notification',
+      recipientEmail: emp.email,
+      idempotencyKey: `cert-notify-${cert.id}`,
+      templateData: { employeeName, companyName, trainingType, date }
+    }
+  })
+  ```
+- הוספת מצב טעינה (loading) לכפתור בזמן השליחה
+- טיפול בשגיאות עם toast מתאים
+- import של supabase client
 
-### 2. `src/components/CertificatePreview.tsx`
-- טיפול ב-`employeeSignature` כמו `instructorSignature` — אם יש תמונת חתימה, מציג `<img>`, אחרת מציג placeholder ריק או טקסט "ממתין לחתימה"
-- הוספת ערך ברירת מחדל ב-`defaultData`
+### קבצים שישתנו
+| קובץ | שינוי |
+|---|---|
+| `src/pages/Certificates.tsx` | החלפת סימולציה בקריאה אמיתית ל-Edge Function |
 
 ## תוצאה
-תוכל לגרור את שדה "חתימת עובד" למקום הרצוי על תבנית התעודה, בדיוק כמו שאתה עושה עם חתימת המדריך. כשהעובד יחתום בעתיד (דרך הקישור במייל), החתימה תופיע שם.
+לחיצה על כפתור המייל תשלח מייל אמיתי לעובד עם פרטי התעודה דרך `notify.malkasafety.com`.
 
