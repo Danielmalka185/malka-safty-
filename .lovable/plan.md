@@ -1,33 +1,45 @@
 
 
-# חיבור כפתור שליחת תעודה במייל לתשתית האמיתית
+# שיפור עורך תבניות התעודות — גישה אינטואיטיבית
 
-## מצב נוכחי
-כפתור המייל בטבלת התעודות מציג הודעת "סימולציה" בלבד. תשתית המייל (`send-transactional-email`, דומיין מאומת, תבנית `certificate-notification`) כבר קיימת ומוכנה.
+## הגישה החדשה: עורך אחד במקום שניים
 
-## שינויים
+במקום שני פאנלים נפרדים (עורך שמאל + תצוגה מקדימה ימין), **התצוגה המקדימה היא העורך**. המשתמש רואה את התעודה כמו שהיא תודפס, ולוחץ ישירות עליה כדי למקם/להזיז שדות.
 
-### 1. `src/pages/Certificates.tsx` — עדכון `handleSendMail`
-- החלפת הסימולציה בקריאה אמיתית ל-Edge Function:
-  ```
-  supabase.functions.invoke('send-transactional-email', {
-    body: {
-      templateName: 'certificate-notification',
-      recipientEmail: emp.email,
-      idempotencyKey: `cert-notify-${cert.id}`,
-      templateData: { employeeName, companyName, trainingType, date }
-    }
-  })
-  ```
-- הוספת מצב טעינה (loading) לכפתור בזמן השליחה
-- טיפול בשגיאות עם toast מתאים
-- import של supabase client
+## מה ישתנה
 
-### קבצים שישתנו
+### 1. `CertificateTemplateEditor.tsx` — מבנה חדש
+- כשסוג התבנית הוא "תמונת רקע": **פאנל אחד עם התמונה במרכז** (ברוחב מלא)
+- מתחת לתמונה: פקדי בחירת שדה + רשימת שדות ממוקמים עם nudge/גודל/צבע
+- ביטול העמודה הנפרדת של תצוגה מקדימה — התמונה עצמה היא גם העורך וגם התצוגה
+- כפתור "הדפס/הורד PDF" ישב מתחת לתמונה
+
+### 2. `ImageFieldEditor.tsx` — שדות מציאותיים
+- **הסרת הריבוע הצבעוני**: במקום `bg-primary/20 border rounded px-2 py-0.5`, טקסט פשוט עם קו תחתון מקווקו דק — נראה ב-hover בלבד
+- **הצגת ערך לדוגמה**: במקום "שם מלא" יוצג "ישראל ישראלי" (מאותו `defaultData` שכבר קיים ב-CertificatePreview)
+- **גודל פונט מסונכרן**: שימוש באותו scale כמו בתצוגה המקדימה (כרגע 0.7) — כך שמה שרואים = מה שמודפס
+- **שם השדה ב-tooltip בלבד** (hover)
+- **כפתורי nudge** (↑↓←→) ברשימת השדות למטה — הזזה ב-0.5%
+- **שדות X/Y מספריים** לעריכה ידנית
+- **שדה "ערך לדוגמה"** — input שמאפשר להכניס טקסט מותאם (כמו 9 נושאי הדרכה)
+
+### 3. `mockData.ts` — הוספת `sampleValue`
+- הוספת `sampleValue?: string` ל-type של `ImageField`
+
+### 4. `CertificatePreview.tsx` — סנכרון גופן
+- שימוש באותו `fontFamily: 'Rubik'` ו-`fontWeight: 600` גם בתצוגה שבעורך
+
+## קבצים
+
 | קובץ | שינוי |
 |---|---|
-| `src/pages/Certificates.tsx` | החלפת סימולציה בקריאה אמיתית ל-Edge Function |
+| `src/data/mockData.ts` | הוספת `sampleValue` ל-ImageField |
+| `src/components/ImageFieldEditor.tsx` | שדות מציאותיים + nudge + X/Y + tooltip + ערך לדוגמה |
+| `src/components/CertificateTemplateEditor.tsx` | מבנה חדש — תמונה אחת שהיא גם עורך וגם תצוגה |
 
 ## תוצאה
-לחיצה על כפתור המייל תשלח מייל אמיתי לעובד עם פרטי התעודה דרך `notify.malkasafety.com`.
+- **תמונה אחת** שנראית כמו התעודה המוגמרת — מה שרואים = מה שמודפס
+- השדות נראים כמו טקסט אמיתי, לא ריבועים
+- מיקום מדויק עם חצים + שדות מספריים
+- אפשר להכניס ערכי דוגמה מותאמים אישית
 
