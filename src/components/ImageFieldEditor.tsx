@@ -97,17 +97,23 @@ interface ImageFieldEditorProps {
   fields: ImageField[];
   onFieldsChange: (fields: ImageField[]) => void;
   onImageUpload: (dataUrl: string) => void;
+  renderMode?: 'full' | 'canvas-only' | 'controls-only';
+  selectedFieldIdx?: number | null;
+  onSelectedFieldChange?: (idx: number | null) => void;
 }
 
 const NUDGE_STEP = 0.5;
 
-const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUpload }: ImageFieldEditorProps) => {
+const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUpload, renderMode = 'full', selectedFieldIdx: externalSelectedIdx, onSelectedFieldChange }: ImageFieldEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [dragging, setDragging] = useState<{ idx: number; startX: number; startY: number; fieldX: number; fieldY: number } | null>(null);
   const [addingField, setAddingField] = useState<string>("");
   const [imgNaturalRatio, setImgNaturalRatio] = useState<number | null>(null);
-  const [selectedFieldIdx, setSelectedFieldIdx] = useState<number | null>(null);
+  const [internalSelectedIdx, setInternalSelectedIdx] = useState<number | null>(null);
+
+  const selectedFieldIdxVal = externalSelectedIdx !== undefined ? externalSelectedIdx : internalSelectedIdx;
+  const setSelectedFieldIdx = onSelectedFieldChange || setInternalSelectedIdx;
 
   const handleImageLoad = () => {
     if (imgRef.current) {
@@ -169,8 +175,8 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
 
   const removeField = (idx: number) => {
     onFieldsChange(fields.filter((_, i) => i !== idx));
-    if (selectedFieldIdx === idx) setSelectedFieldIdx(null);
-    else if (selectedFieldIdx !== null && selectedFieldIdx > idx) setSelectedFieldIdx(selectedFieldIdx - 1);
+    if (selectedFieldIdxVal === idx) setSelectedFieldIdx(null);
+    else if (selectedFieldIdxVal !== null && selectedFieldIdxVal > idx) setSelectedFieldIdx(selectedFieldIdxVal - 1);
   };
 
   const updateFieldProp = (idx: number, prop: keyof ImageField, value: number | string) => {
@@ -208,9 +214,8 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     );
   }
 
-  return (
-    <div className="space-y-4">
-      {/* Field selector + upload */}
+  const renderCanvas = () => (
+    <div className="space-y-3">
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={addingField} onValueChange={setAddingField}>
           <SelectTrigger className="w-[200px]">
@@ -241,7 +246,6 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
         </label>
       </div>
 
-      {/* WYSIWYG image canvas — fields rendered as realistic text */}
       <TooltipProvider delayDuration={200}>
         <div
           ref={containerRef}
@@ -262,7 +266,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
           />
           {fields.map((field, idx) => {
             const sampleText = getSampleValue(field);
-            const isSelected = selectedFieldIdx === idx;
+            const isSelected = selectedFieldIdxVal === idx;
             const baseKey = getBaseKey(field.key);
             const isSignature = baseKey === 'instructorSignature' || baseKey === 'employeeSignature';
 
@@ -307,8 +311,11 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
           })}
         </div>
       </TooltipProvider>
+    </div>
+  );
 
-      {/* Field list with nudge + X/Y + sample value */}
+  const renderControls = () => (
+    <>
       {fields.length > 0 && (
         <div className="space-y-2">
           <Label className="text-sm font-medium">שדות ממוקמים:</Label>
@@ -316,11 +323,10 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
             <div
               key={idx}
               className={`rounded p-2 text-sm space-y-2 border transition-colors ${
-                selectedFieldIdx === idx ? 'border-primary bg-primary/5' : 'border-transparent bg-muted/50'
+                selectedFieldIdxVal === idx ? 'border-primary bg-primary/5' : 'border-transparent bg-muted/50'
               }`}
               onClick={() => setSelectedFieldIdx(idx)}
             >
-              {/* Row 1: label + size + color + delete */}
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="shrink-0">{field.label}</Badge>
                 <div className="flex items-center gap-1 mr-auto">
@@ -345,7 +351,6 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
                 </Button>
               </div>
 
-              {/* Row 2: X/Y numeric + nudge arrows */}
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1">
                   <Label className="text-xs">X:</Label>
@@ -387,7 +392,6 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
                 </div>
               </div>
 
-              {/* Row 3: sample value input */}
               <div className="flex items-center gap-1">
                 <Label className="text-xs shrink-0">ערך לדוגמה:</Label>
                 <Input
@@ -401,6 +405,16 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
           ))}
         </div>
       )}
+    </>
+  );
+
+  if (renderMode === 'canvas-only') return renderCanvas();
+  if (renderMode === 'controls-only') return renderControls();
+
+  return (
+    <div className="space-y-4">
+      {renderCanvas()}
+      {renderControls()}
     </div>
   );
 };
