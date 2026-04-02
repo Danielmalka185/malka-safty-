@@ -77,9 +77,11 @@ const CertificateTemplateEditor = () => {
   }));
   const defaultTemplates = templates.filter(t => !t.categoryId);
 
+  const isImageTemplate = form.templateType === 'image';
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Editor Panel */}
+    <div className={isImageTemplate ? "space-y-6" : "grid grid-cols-1 lg:grid-cols-2 gap-6"}>
+      {/* Settings Panel */}
       <div className="space-y-6">
         <Card>
           <CardHeader className="pb-3">
@@ -259,17 +261,29 @@ const CertificateTemplateEditor = () => {
         </div>
       </div>
 
-      {/* Preview Panel */}
-      <div className="lg:sticky lg:top-20 lg:self-start">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">תצוגה מקדימה</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CertificatePreview template={form} showPrintButton />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Preview Panel — only for HTML templates (image templates are WYSIWYG in the editor itself) */}
+      {!isImageTemplate && (
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">תצוגה מקדימה</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <CertificatePreview template={form} showPrintButton />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Print button for image templates */}
+      {isImageTemplate && form.backgroundImage && (
+        <div className="flex justify-center">
+          <Button onClick={() => downloadCertificatePdf(form, {})} variant="outline" className="gap-2">
+            <Printer className="h-4 w-4" />
+            הדפס / הורד PDF
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
