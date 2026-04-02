@@ -79,6 +79,7 @@ export interface ImageField {
   yPercent: number;
   fontSize: number;
   color: string;
+  sampleValue?: string;
 }
 
 export interface Instructor {

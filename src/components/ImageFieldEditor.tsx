@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Plus, Upload } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Trash2, Plus, Upload, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import type { ImageField } from "@/data/mockData";
 
 const availableFields = [
@@ -50,9 +51,45 @@ const availableFields = [
 
 const allFields = availableFields.flatMap(g => g.fields);
 
-// Get base key without numeric suffix (e.g., "date_2" → "date")
+const defaultSampleData: Record<string, string> = {
+  employeeName: 'ישראל ישראלי',
+  lastName: 'ישראלי',
+  firstName: 'ישראל',
+  idNumber: '300000000',
+  companyName: 'חברה לדוגמה',
+  trainingType: 'הדרכת בטיחות',
+  categoryName: 'בטיחות כללית',
+  date: '1.1.2025',
+  expiryDate: '1.1.2026',
+  instructor: 'מדריך לדוגמה',
+  instructorPhone: '050-0000000',
+  instructorId: '200000000',
+  birthYear: '1990',
+  profession: 'עובד כללי',
+  fatherName: 'אברהם',
+  phone: '050-1234567',
+  address: 'תל אביב',
+  companyId: '51-1234567',
+  companyPhone: '03-1234567',
+  companyAddress: 'רחוב ראשי 1',
+  trainingKind: 'חדש',
+  certificateNumber: '1001',
+  instructorAddress: 'חיפה',
+  instructorExperience: '15',
+  instructorCertNumber: 'M-5678',
+  instructorCertExpiry: '1.1.2027',
+  instructorSignature: '',
+  employeeSignature: '',
+};
+
 function getBaseKey(key: string): string {
   return key.replace(/_\d+$/, '');
+}
+
+function getSampleValue(field: ImageField): string {
+  if (field.sampleValue) return field.sampleValue;
+  const baseKey = getBaseKey(field.key);
+  return defaultSampleData[baseKey] || field.label;
 }
 
 interface ImageFieldEditorProps {
@@ -62,12 +99,15 @@ interface ImageFieldEditorProps {
   onImageUpload: (dataUrl: string) => void;
 }
 
+const NUDGE_STEP = 0.5;
+
 const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUpload }: ImageFieldEditorProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [dragging, setDragging] = useState<{ idx: number; startX: number; startY: number; fieldX: number; fieldY: number } | null>(null);
   const [addingField, setAddingField] = useState<string>("");
   const [imgNaturalRatio, setImgNaturalRatio] = useState<number | null>(null);
+  const [selectedFieldIdx, setSelectedFieldIdx] = useState<number | null>(null);
 
   const handleImageLoad = () => {
     if (imgRef.current) {
@@ -99,17 +139,19 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
     const fieldInfo = allFields.find(f => f.key === baseKey);
     if (!fieldInfo) return;
 
-    // Generate unique key with suffix if duplicate
     const existingCount = fields.filter(f => getBaseKey(f.key) === baseKey).length;
     const fieldKey = existingCount > 0 ? `${baseKey}_${existingCount + 1}` : baseKey;
     const label = existingCount > 0 ? `${fieldInfo.label} (${existingCount + 1})` : fieldInfo.label;
 
-    onFieldsChange([...fields, { key: fieldKey, label, xPercent, yPercent, fontSize: 14, color: '#000000' }]);
+    const newFields = [...fields, { key: fieldKey, label, xPercent, yPercent, fontSize: 14, color: '#000000' }];
+    onFieldsChange(newFields);
+    setSelectedFieldIdx(newFields.length - 1);
     setAddingField("");
   };
 
   const handleMouseDown = (e: React.MouseEvent, idx: number) => {
     e.stopPropagation();
+    setSelectedFieldIdx(idx);
     setDragging({ idx, startX: e.clientX, startY: e.clientY, fieldX: fields[idx].xPercent, fieldY: fields[idx].yPercent });
   };
 
@@ -125,15 +167,30 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
 
   const handleMouseUp = useCallback(() => setDragging(null), []);
 
-  const removeField = (idx: number) => onFieldsChange(fields.filter((_, i) => i !== idx));
+  const removeField = (idx: number) => {
+    onFieldsChange(fields.filter((_, i) => i !== idx));
+    if (selectedFieldIdx === idx) setSelectedFieldIdx(null);
+    else if (selectedFieldIdx !== null && selectedFieldIdx > idx) setSelectedFieldIdx(selectedFieldIdx - 1);
+  };
 
-  const updateFieldProp = (idx: number, prop: 'fontSize' | 'color', value: number | string) => {
+  const updateFieldProp = (idx: number, prop: keyof ImageField, value: number | string) => {
     const updated = [...fields];
     updated[idx] = { ...updated[idx], [prop]: value };
     onFieldsChange(updated);
   };
 
-  // No longer filter out used keys — allow duplicates
+  const handleNudge = (idx: number, direction: 'up' | 'down' | 'left' | 'right') => {
+    const updated = [...fields];
+    const field = { ...updated[idx] };
+    switch (direction) {
+      case 'up': field.yPercent = Math.max(0, field.yPercent - NUDGE_STEP); break;
+      case 'down': field.yPercent = Math.min(100, field.yPercent + NUDGE_STEP); break;
+      case 'left': field.xPercent = Math.max(0, field.xPercent - NUDGE_STEP); break;
+      case 'right': field.xPercent = Math.min(100, field.xPercent + NUDGE_STEP); break;
+    }
+    updated[idx] = field;
+    onFieldsChange(updated);
+  };
 
   if (!backgroundImage) {
     return (
@@ -153,7 +210,7 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
 
   return (
     <div className="space-y-4">
-      {/* Field controls */}
+      {/* Field selector + upload */}
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={addingField} onValueChange={setAddingField}>
           <SelectTrigger className="w-[200px]">
@@ -184,78 +241,162 @@ const ImageFieldEditor = ({ backgroundImage, fields, onFieldsChange, onImageUplo
         </label>
       </div>
 
-      {/* Image with overlay fields — uses natural image aspect ratio */}
-      <div
-        ref={containerRef}
-        className="relative border rounded-lg overflow-hidden cursor-crosshair select-none"
-        style={imgNaturalRatio ? { aspectRatio: `${imgNaturalRatio}` } : undefined}
-        onClick={handleContainerClick}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        <img
-          ref={imgRef}
-          src={backgroundImage}
-          alt="תבנית"
-          className="absolute inset-0 w-full h-full object-fill"
-          draggable={false}
-          onLoad={handleImageLoad}
-        />
-        {/* Grid lines for positioning help */}
-        <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.15 }}>
-          {[25, 50, 75].map(p => (
-            <div key={`v${p}`} className="absolute top-0 bottom-0 border-l border-dashed border-primary" style={{ left: `${p}%` }} />
-          ))}
-          {[25, 50, 75].map(p => (
-            <div key={`h${p}`} className="absolute left-0 right-0 border-t border-dashed border-primary" style={{ top: `${p}%` }} />
-          ))}
-        </div>
-        {fields.map((field, idx) => (
-          <div
-            key={idx}
-            className="absolute bg-primary/20 border border-primary rounded px-2 py-0.5 text-xs cursor-move hover:bg-primary/30 transition-colors"
-            style={{
-              right: `${100 - field.xPercent}%`,
-              top: `${field.yPercent}%`,
-              fontSize: field.fontSize * 0.7,
-              color: field.color,
-            }}
-            onMouseDown={(e) => handleMouseDown(e, idx)}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {field.label}
-          </div>
-        ))}
-      </div>
+      {/* WYSIWYG image canvas — fields rendered as realistic text */}
+      <TooltipProvider delayDuration={200}>
+        <div
+          ref={containerRef}
+          className="relative border rounded-lg overflow-hidden cursor-crosshair select-none"
+          style={imgNaturalRatio ? { aspectRatio: `${imgNaturalRatio}` } : undefined}
+          onClick={handleContainerClick}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <img
+            ref={imgRef}
+            src={backgroundImage}
+            alt="תבנית"
+            className="absolute inset-0 w-full h-full object-fill"
+            draggable={false}
+            onLoad={handleImageLoad}
+          />
+          {fields.map((field, idx) => {
+            const sampleText = getSampleValue(field);
+            const isSelected = selectedFieldIdx === idx;
+            const baseKey = getBaseKey(field.key);
+            const isSignature = baseKey === 'instructorSignature' || baseKey === 'employeeSignature';
 
-      {/* Field list */}
+            return (
+              <Tooltip key={idx}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`absolute cursor-move transition-all ${
+                      isSelected
+                        ? 'outline outline-2 outline-primary outline-offset-1 bg-primary/10'
+                        : 'hover:bg-primary/5'
+                    }`}
+                    style={{
+                      right: `${100 - field.xPercent}%`,
+                      top: `${field.yPercent}%`,
+                      fontSize: `${field.fontSize * 0.7}px`,
+                      color: field.color,
+                      fontWeight: 600,
+                      fontFamily: "'Rubik', sans-serif",
+                      whiteSpace: 'pre-line',
+                      borderBottom: isSelected ? 'none' : '1px dashed currentColor',
+                      padding: '0 2px',
+                    }}
+                    onMouseDown={(e) => handleMouseDown(e, idx)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedFieldIdx(idx);
+                    }}
+                  >
+                    {isSignature ? (
+                      <span className="text-muted-foreground italic" style={{ fontSize: `${field.fontSize * 0.5}px` }}>
+                        [חתימה]
+                      </span>
+                    ) : sampleText}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  {field.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
+      </TooltipProvider>
+
+      {/* Field list with nudge + X/Y + sample value */}
       {fields.length > 0 && (
         <div className="space-y-2">
           <Label className="text-sm font-medium">שדות ממוקמים:</Label>
           {fields.map((field, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-muted/50 rounded p-2 text-sm">
-              <Badge variant="secondary">{field.label}</Badge>
-              <div className="flex items-center gap-1 mr-auto">
-                <Label className="text-xs">גודל:</Label>
+            <div
+              key={idx}
+              className={`rounded p-2 text-sm space-y-2 border transition-colors ${
+                selectedFieldIdx === idx ? 'border-primary bg-primary/5' : 'border-transparent bg-muted/50'
+              }`}
+              onClick={() => setSelectedFieldIdx(idx)}
+            >
+              {/* Row 1: label + size + color + delete */}
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="shrink-0">{field.label}</Badge>
+                <div className="flex items-center gap-1 mr-auto">
+                  <Label className="text-xs shrink-0">גודל:</Label>
+                  <Input
+                    type="number"
+                    value={field.fontSize}
+                    onChange={(e) => updateFieldProp(idx, 'fontSize', Number(e.target.value))}
+                    className="w-14 h-7 text-xs"
+                    min={8}
+                    max={48}
+                  />
+                  <input
+                    type="color"
+                    value={field.color}
+                    onChange={(e) => updateFieldProp(idx, 'color', e.target.value)}
+                    className="w-7 h-7 rounded border cursor-pointer"
+                  />
+                </div>
+                <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={(e) => { e.stopPropagation(); removeField(idx); }}>
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* Row 2: X/Y numeric + nudge arrows */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1">
+                  <Label className="text-xs">X:</Label>
+                  <Input
+                    type="number"
+                    value={Math.round(field.xPercent * 10) / 10}
+                    onChange={(e) => updateFieldProp(idx, 'xPercent', Number(e.target.value))}
+                    className="w-16 h-7 text-xs"
+                    step={0.5}
+                    min={0}
+                    max={100}
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <Label className="text-xs">Y:</Label>
+                  <Input
+                    type="number"
+                    value={Math.round(field.yPercent * 10) / 10}
+                    onChange={(e) => updateFieldProp(idx, 'yPercent', Number(e.target.value))}
+                    className="w-16 h-7 text-xs"
+                    step={0.5}
+                    min={0}
+                    max={100}
+                  />
+                </div>
+                <div className="flex items-center gap-0.5">
+                  <Button variant="outline" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleNudge(idx, 'right'); }}>
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleNudge(idx, 'left'); }}>
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleNudge(idx, 'up'); }}>
+                    <ChevronUp className="h-3 w-3" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleNudge(idx, 'down'); }}>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Row 3: sample value input */}
+              <div className="flex items-center gap-1">
+                <Label className="text-xs shrink-0">ערך לדוגמה:</Label>
                 <Input
-                  type="number"
-                  value={field.fontSize}
-                  onChange={(e) => updateFieldProp(idx, 'fontSize', Number(e.target.value))}
-                  className="w-16 h-7 text-xs"
-                  min={8}
-                  max={48}
-                />
-                <input
-                  type="color"
-                  value={field.color}
-                  onChange={(e) => updateFieldProp(idx, 'color', e.target.value)}
-                  className="w-7 h-7 rounded border cursor-pointer"
+                  value={field.sampleValue || ''}
+                  onChange={(e) => updateFieldProp(idx, 'sampleValue', e.target.value)}
+                  placeholder={defaultSampleData[getBaseKey(field.key)] || field.label}
+                  className="h-7 text-xs flex-1"
                 />
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeField(idx)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
             </div>
           ))}
         </div>
