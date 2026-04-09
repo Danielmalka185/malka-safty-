@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/AppLayout";
 import { DataProvider } from "@/context/DataContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Companies from "./pages/Companies";
 import Employees from "./pages/Employees";
@@ -16,6 +18,7 @@ import Billings from "./pages/Billings";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Unsubscribe from "./pages/Unsubscribe";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -26,21 +29,26 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/employees" element={<Employees />} />
-              <Route path="/training-types" element={<TrainingTypes />} />
-              <Route path="/trainings" element={<Trainings />} />
-              <Route path="/certificates" element={<Certificates />} />
-              <Route path="/risk-surveys" element={<RiskSurveys />} />
-              <Route path="/billings" element={<Billings />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-            <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AuthProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route element={<ProtectedRoute />}>
+                <Route element={<AppLayout />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/companies" element={<Companies />} />
+                  <Route path="/employees" element={<Employees />} />
+                  <Route path="/training-types" element={<TrainingTypes />} />
+                  <Route path="/trainings" element={<Trainings />} />
+                  <Route path="/certificates" element={<Certificates />} />
+                  <Route path="/risk-surveys" element={<RiskSurveys />} />
+                  <Route path="/billings" element={<Billings />} />
+                  <Route path="/settings" element={<Settings />} />
+                </Route>
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </DataProvider>
     </TooltipProvider>
