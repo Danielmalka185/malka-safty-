@@ -14,6 +14,7 @@ import Certificates from "./pages/Certificates";
 import RiskSurveys from "./pages/RiskSurveys";
 import Billings from "./pages/Billings";
 import Settings from "./pages/Settings";
+import Tasks from "./pages/Tasks";
 import NotFound from "./pages/NotFound";
 import Unsubscribe from "./pages/Unsubscribe";
 
