@@ -130,6 +130,17 @@ export interface EmailTemplate {
   body: string;
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  dueDate: string;
+  status: 'todo' | 'in_progress' | 'done';
+  priority: 'low' | 'medium' | 'high';
+  companyId?: string;
+  createdAt: string;
+}
+
 export interface RiskSurvey {
   id: string;
   siteName: string;

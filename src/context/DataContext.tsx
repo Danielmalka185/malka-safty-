@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
   Company, Employee, Training, Certificate, CertificateTemplate, Instructor,
-  Billing, EmailTemplate, calculateFinalPrice,
+  Billing, EmailTemplate, Task, calculateFinalPrice,
   companies as initCompanies,
   employees as initEmployees,
   trainings as initTrainings,
@@ -26,6 +26,10 @@ interface DataContextType {
   instructors: Instructor[];
   billings: Billing[];
   emailTemplate: EmailTemplate;
+  tasks: Task[];
+  addTask: (data: Omit<Task, 'id'>) => Task;
+  updateTask: (data: Task) => void;
+  deleteTask: (id: string) => void;
   addCompany: (data: Omit<Company, 'id'>) => Company;
   updateCompany: (data: Company) => void;
   addEmployee: (data: Omit<Employee, 'id'>) => Employee;
@@ -67,6 +71,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [instructors, setInstructors] = useState<Instructor[]>([...initInstructors]);
   const [billings, setBillings] = useState<Billing[]>([]);
   const [emailTemplate, setEmailTemplate] = useState<EmailTemplate>(defaultEmailTemplate);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const addTask = useCallback((data: Omit<Task, 'id'>): Task => {
+    const newTask: Task = { ...data, id: `task-${Date.now()}` };
+    setTasks(prev => [...prev, newTask]);
+    return newTask;
+  }, []);
+  const updateTask = useCallback((data: Task) => {
+    setTasks(prev => prev.map(t => t.id === data.id ? data : t));
+  }, []);
+  const deleteTask = useCallback((id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  }, []);
 
   const addCompany = useCallback((data: Omit<Company, 'id'>): Company => {
     const newCompany: Company = { ...data, id: `c${Date.now()}` };
@@ -235,6 +252,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addInstructor, updateInstructor, deleteInstructor,
       addBilling, updateBilling,
       updateEmailTemplate: updateEmailTemplateFn,
+      tasks, addTask, updateTask, deleteTask,
     }}>
       {children}
     </DataContext.Provider>
