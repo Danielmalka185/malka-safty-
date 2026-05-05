@@ -26,6 +26,10 @@ interface DataContextType {
   instructors: Instructor[];
   billings: Billing[];
   emailTemplate: EmailTemplate;
+  tasks: Task[];
+  addTask: (data: Omit<Task, 'id'>) => Task;
+  updateTask: (data: Task) => void;
+  deleteTask: (id: string) => void;
   addCompany: (data: Omit<Company, 'id'>) => Company;
   updateCompany: (data: Company) => void;
   addEmployee: (data: Omit<Employee, 'id'>) => Employee;
