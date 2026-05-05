@@ -71,6 +71,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [instructors, setInstructors] = useState<Instructor[]>([...initInstructors]);
   const [billings, setBillings] = useState<Billing[]>([]);
   const [emailTemplate, setEmailTemplate] = useState<EmailTemplate>(defaultEmailTemplate);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const addTask = useCallback((data: Omit<Task, 'id'>): Task => {
+    const newTask: Task = { ...data, id: `task-${Date.now()}` };
+    setTasks(prev => [...prev, newTask]);
+    return newTask;
+  }, []);
+  const updateTask = useCallback((data: Task) => {
+    setTasks(prev => prev.map(t => t.id === data.id ? data : t));
+  }, []);
+  const deleteTask = useCallback((id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  }, []);
 
   const addCompany = useCallback((data: Omit<Company, 'id'>): Company => {
     const newCompany: Company = { ...data, id: `c${Date.now()}` };
