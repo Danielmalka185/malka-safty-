@@ -1,4 +1,4 @@
-import { Employee } from './mockData';
+import { Employee } from '../mockData';
 
 export const employees: Employee[] = [
   { id: 'e1', firstName: 'NICOLAI', lastName: 'BARATINSCHI', fatherName: 'BARATINSCHI', idNumber: 'AB2126900', birthYear: 1987, profession: 'עובד כללי', address: 'בורוכוב 12 נתניה', phone: '', companyId: 'c1', status: 'active' },

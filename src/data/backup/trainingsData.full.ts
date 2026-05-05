@@ -1,4 +1,4 @@
-import { Training } from './mockData';
+import { Training } from '../mockData';
 
 export let trainings: Training[] = [
   { id: 't1', companyId: 'c1', categoryId: 'cat1', trainingTypeIds: ["1", "2", "3", "9"], date: '2025-07-11', location: '', instructor: 'יעקב מלכה', participantIds: ["e1", "e7167"], pricingType: 'global', basePrice: 0, discountPercent: 0 },

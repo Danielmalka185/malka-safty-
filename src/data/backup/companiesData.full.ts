@@ -1,4 +1,4 @@
-import { Company } from './mockData';
+import { Company } from '../mockData';
 
 export let companies: Company[] = [
   { id: 'c1', name: 'פ.ק סטרוי בע"מ', registrationNumber: '516669611', contactPerson: '', phone: '052-6131777', officePhone: '', email: '', address: 'האלה 2/8 חיפה', mailingAddress: '', website: '', notes: 'בע"מ' },
