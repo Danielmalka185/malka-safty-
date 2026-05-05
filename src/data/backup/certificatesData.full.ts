@@ -1,6 +1,6 @@
 import { Certificate } from '../mockData';
 
-export let certificates: Certificate[] = [
+export let certificates: any[] = [
   { id: 'cert1', employeeId: 'e1', companyId: 'c1', trainingTypeIds: ['1', '9', '3', '2'], trainingId: 't1', issueDate: '2025-07-11', expiryDate: '2027-07-10', status: 'valid' },
   { id: 'cert5', employeeId: 'e2', companyId: 'c1', trainingTypeIds: ['1', '9', '3', '2'], trainingId: 't2', issueDate: '2022-08-21', expiryDate: '2024-08-20', status: 'expired' },
   { id: 'cert9', employeeId: 'e3', companyId: 'c2', trainingTypeIds: ['1', '9', '10', '3'], trainingId: 't3', issueDate: '2024-04-05', expiryDate: '2026-04-04', status: 'expiring_soon' },
