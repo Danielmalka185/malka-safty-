@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import {
   Company, Employee, Training, Certificate, CertificateTemplate, Instructor,
-  Billing, EmailTemplate, calculateFinalPrice,
+  Billing, EmailTemplate, Task, calculateFinalPrice,
   companies as initCompanies,
   employees as initEmployees,
   trainings as initTrainings,
