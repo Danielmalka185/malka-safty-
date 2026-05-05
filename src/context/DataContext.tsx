@@ -252,6 +252,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addInstructor, updateInstructor, deleteInstructor,
       addBilling, updateBilling,
       updateEmailTemplate: updateEmailTemplateFn,
+      tasks, addTask, updateTask, deleteTask,
     }}>
       {children}
     </DataContext.Provider>
