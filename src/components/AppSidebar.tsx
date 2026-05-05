@@ -34,6 +34,7 @@ const menuItems = [
   { title: "תעודות", url: "/certificates", icon: Award },
   { title: "סקרי סיכונים", url: "/risk-surveys", icon: ClipboardCheck },
   { title: "חיובים", url: "/billings", icon: CreditCard },
+  { title: "משימות", url: "/tasks", icon: CheckSquare },
   { title: "הגדרות", url: "/settings", icon: Settings },
 ];
 
